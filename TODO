@@ -1,0 +1,70 @@
+=== General ===
+
+- "pack" target in the Makefile
+- License statements in all files
+- Allow simultaneously running labs with virtual machine having common names (?)
+- Accelerate lab shutdown (and, possibly, startup)
+
+=== Kernel ===
+
+- MPLS support (by i-maravic)?
+- Test functionality of Netkit-specific patches
+- systemd-specific kernel command line parameters (see the systemd man page):
+  systemd.show_status=0
+
+=== Filesystem ===
+
+- Makefile: add a check that in-vm setup has completed successfully
+- Is mirroring of file permissions from the user's to the group's and other's still required? (in netkit-phase1)
+- Mount modules directory
+- motd
+- Set default standard output and error of systemd to journal+console for Netkit scripts
+- useradd -m -p nlbMnI.VQBS3s guest" # nlbMnI.VQBS3s is the encrypted version of "guest", and has been obtained using `htpasswd -nd guest'
+- Links quagga <-> zebra (?)
+- Link /etc/init.d/bind -> /etc/init.d/bind9
+- update-exim4.conf
+- resolv.conf
+- apt/sources.list
+- /etc/default for snmpd and xorp
+- pam.d/quagga tweak (?)
+- Move quagga sample configurations from /usr/share/doc/quagga/examples to /etc/quagga (beware of file permissions)
+- Build list of installed packages
+- Add Netkit-specific scripts
+- Mount host home directory and kernel modules directory (done; check that it works)
+- Clear shell history
+- apt-get clean after installing packages
+- Packages to be installed:
+
+[not a command-line utility] pgset (packet generator)
+(http load balancer?)
+
+For packages marked with [*], only install if they have not been installed as
+dependencies of other packages
+
+bsd-mailx [*]
+iproute2 [*]
+oinkmaster [*] [related with Snort]
+openbsd-inetd [*]
+pdns-recursor [*]
+procmail [*]
+ike (ike-server)
+pimd [conflicts with smcroute]
+racoon [conflicts with ike-server]
+exim4 [conflicts with postfix]
+aptitude
+bsdutils [*]
+ca-certificates [*]
+dbus [*] [may have adverse effects on started ttys]
+gzip [*]
+bzip2 [*]
+daemon [*]
+locales [setting C.UTF-8 as default locale also solves accented characters input problems]
+ed [*]
+emacs [*]
+findutils [*]
+locate [*] [build the database once and for all]
+imagemagick [*] (?)
+mktemp [*]
+perl [*]
+python [*]
+

@@ -1,0 +1,5 @@
+# The following line ensures that the root filesystem is correctly (re)mounted
+# in read-write mode
+# DEVICE   MOUNTPOINT FSTYPE OPTIONS                [DUMP and PASS are optional]
+/dev/ubda  /          auto   defaults
+

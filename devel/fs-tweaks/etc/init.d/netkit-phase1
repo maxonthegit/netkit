@@ -1,0 +1,260 @@
+#!/bin/bash
+
+#     This script is part of Netkit, a network emulation environment
+#     based on the integration of several existing pieces of software.
+#     For more information: http://www.netkit.org/
+#
+#     Copyright (C) 2002-2009, 2015
+#         Maurizio Patrignani
+#         Stefano Pettini
+#         Maurizio Pizzonia
+#         Fabio Ricci
+#         Massimo Rimondini (rimondin@ing.uniroma3.it)
+#     Computer Networks Research Group, Roma Tre University
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, version 3 of the License.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+VERBOSE=1
+
+vecho() {
+   [ "$VERBOSE" = 1 ] && echo -e "\e[34;1m$*\e[0m"
+}
+
+
+case "$1" in
+   start) 
+      ASSIGN_VARIABLES=$(awk -v FS== -v RS=' ' \
+         '
+            ($1=="name") {print "HOSTNAME=" $2}
+            ($1=="title") {print "TITLE=" $2}
+            ($1=="def_route") {print "DEFAULT_ROUTE=" $2}
+            ($1=="ns") {print "NAME_SERVER=" $2}
+            ($1=="ubda") {print "FILESYSTEM=" $2}
+            ($1=="quiet") {print "VERBOSE=0"}
+         ' /proc/cmdline)
+
+      eval "$ASSIGN_VARIABLES"
+      COW=$(echo $FILESYSTEM | awk -v FS=, '{print $2}')
+
+      # Set title for the terminal window (make sure that systemd does not
+      # swallow the output of this script into its journal)
+      vecho "Setting terminal title..."
+      if [ -n "$TITLE" ]; then
+         echo -ne "\e]2;${TITLE}\a"
+         # For Konsole (no longer used because title is set using the --title option)
+#         echo -ne "\e]30;${TITLE}\a"
+      fi
+
+
+      export HOSTNAME
+
+      # Configure virtual host only at first boot
+      if [ ! -e /etc/vhostconfigured ]; then
+
+         vecho "Configuring virtual host (for first boot)..."
+         if [ -n "$HOSTNAME" ]; then
+            vecho "Setting hostname..."
+            echo $HOSTNAME > /etc/hostname
+            hostname --file /etc/hostname
+            sed -i "s/^.*127\.0\.0\.1.*$/127.0.0.1 $HOSTNAME/" /etc/hosts
+         fi
+
+         
+         [ ! -z "$COW" ] && touch /etc/vhostconfigured
+      fi
+
+      AUTOCONF_INTERFACES=$(awk -v FS== -v RS=' ' \
+         '(match($1,"autoconf_eth[0-9]+")) {
+               gsub("autoconf_","",$1)
+               gsub("\n","",$2)
+               print "echo \"Bringing up interface " $1 " (" $2 ")...\""
+               print "ifconfig " $1 " " $2 " up"
+            }
+         ' /proc/cmdline)
+
+      # Autoconfigure interfaces, if asked to
+      vecho "Autoconfiguring network interfaces..."
+      eval "$AUTOCONF_INTERFACES"
+
+      # Insert a default entry in the routing table, if asked to
+      [ -n "$DEFAULT_ROUTE" ] && ip route add default via $DEFAULT_ROUTE
+      
+      # Enable a name server, if asked to
+      [ -n "$NAME_SERVER" ] && sed -i "1inameserver $NAME_SERVER" /etc/resolv.conf
+      ;;
+
+   stop)
+   
+      vecho "Unmounting /hosthome and /hostlab..."
+      mountpoint /hosthome >/dev/null && umount /hosthome
+      mountpoint /hostlab >/dev/null && umount /hostlab
+
+      KERNEL_VERSION=`uname -r`
+      if [ -f /lib/modules/$KERNEL_VERSION/modules.dep ]; then
+         echo "Unmounting /lib/modules..."
+         umount /lib/modules
+      fi
+      ;;
+
+   *)
+      echo "Usage: $0 {start|stop}"
+      exit 1
+      ;;
+
+esac
+
+
+
+
+
+
+
+
+
+
+
+
+######################### netkit-phase2 follows
+
+
+
+
+### BEGIN INIT INFO
+# Provides:          netkit-phase2
+# Required-Start:
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Netkit phase 2
+# Description:       This is a Netkit initialization script. It is intended for
+#                    usage inside virtual machines.
+### END INIT INFO
+
+# ANSI style escape sequences
+DELIMITER_TEXT=$'\e[34;1m'
+NORMAL_TEXT=$'\e[0m\e[34m'
+PLAIN_TEXT=$'\e[0m'
+INFO_FIELD=$'\e[34;1m'
+
+
+case "$1" in
+   start) 
+      echo
+      echo "${DELIMITER_TEXT}--- Starting Netkit phase 2 init script ---${NORMAL_TEXT}"
+
+      ASSIGN_VARIABLES=`cat /proc/cmdline | awk -v FS== -v RS=' ' \
+         '
+            ($1=="exec") {print "COMMAND=" $2}
+            ($1=="hostlab") {print "HOSTLAB=" $2}
+            ($1=="test") {print "TEST=" $1}
+         '`
+
+      eval "$ASSIGN_VARIABLES"
+
+      if [ -f /hostlab/shared.startup ]; then
+         echo
+         echo ">>> Running shared startup script..."
+         /bin/sh -c 'source /hostlab/shared.startup'
+         echo ">>> End of shared startup script."
+         echo
+      fi
+
+      if [ -f /hostlab/$HOSTNAME.startup ]; then
+         echo
+         echo ">>> Running $HOSTNAME specific startup script..."
+         /bin/sh -c 'source /hostlab/$HOSTNAME.startup'
+         echo ">>> End of $HOSTNAME specific startup script."
+         echo
+      fi
+
+      if [ -x "$COMMAND" ]; then
+         echo "Executing $COMMAND ..."
+         $COMMAND
+      fi
+
+
+
+      if [ -d /hostlab ]; then
+         # Read lab configuration file, if present
+         if [ -r "/hostlab/lab.conf" ]; then
+            # Filter out unuseful (and potentially invalid) lab.conf contents.
+            eval `grep -E "(LAB_VERSION)|(LAB_AUTHOR)|(LAB_EMAIL)|(LAB_WEB)|(LAB_DESCRIPTION)" /hostlab/lab.conf`
+         fi
+
+         : ${LAB_VERSION:="<none>"}
+         : ${LAB_AUTHOR:="<none>"}
+         : ${LAB_EMAIL:="<none>"}
+         : ${LAB_WEB:="<none>"}
+         : ${LAB_DESCRIPTION:="<none>"}
+
+         echo
+         echo "${DELIMITER_TEXT}##################################################${NORMAL_TEXT}"
+         echo
+         echo "${INFO_FIELD}Lab directory (host)${NORMAL_TEXT}: $HOSTLAB"
+         echo "${INFO_FIELD}Version${NORMAL_TEXT}: $LAB_VERSION"
+         echo "${INFO_FIELD}Author${NORMAL_TEXT}:  $LAB_AUTHOR"
+         echo "${INFO_FIELD}Email${NORMAL_TEXT}:   $LAB_EMAIL"
+         echo "${INFO_FIELD}Web${NORMAL_TEXT}:     $LAB_WEB"
+         echo "${INFO_FIELD}Description${NORMAL_TEXT}:"
+         echo "$LAB_DESCRIPTION"
+         echo
+         echo "${DELIMITER_TEXT}##################################################${NORMAL_TEXT}"
+         echo
+         touch /hostlab/$HOSTNAME.ready
+      fi
+
+
+      if [ ! -z "$TEST" ]; then
+         /etc/init.d/netkit-test-phase
+      fi
+      
+
+      echo "${DELIMITER_TEXT}--- Netkit phase 2 initialization terminated ---${PLAIN_TEXT}"
+      echo
+      ;;
+
+   stop)
+      echo
+      echo "${DELIMITER_TEXT}--- Starting Netkit phase 2 shutdown script ---${NORMAL_TEXT}"
+
+      if [ -f /hostlab/$HOSTNAME.shutdown ]; then
+         echo
+         echo ">>> Running $HOSTNAME specific shutdown script..."
+         /bin/sh -c 'source /hostlab/$HOSTNAME.shutdown'
+         echo ">>> End of $HOSTNAME specific shutdown script."
+         echo
+      fi
+
+      if [ -f /hostlab/shared.shutdown ]; then
+         echo
+         echo ">>> Running shared shutdown script..."
+         /bin/sh -c 'source /hostlab/shared.shutdown'
+         echo ">>> End of shared shutdown script."
+         echo
+      fi
+
+      
+      echo "${DELIMITER_TEXT}--- Netkit shutdown phase 2 terminated ---${PLAIN_TEXT}"
+      echo
+      ;;
+
+   *)
+      echo "Usage: $0 {start|stop}"
+      exit 1
+      ;;
+
+esac
+

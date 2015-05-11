@@ -1,0 +1,43 @@
+#!/bin/sh
+
+#     This script is part of Netkit, a network emulation environment based on
+#     the integration of several existing pieces of software.
+#     For more information: http://www.netkit.org/
+#
+#     Copyright (C) 2015
+#         Massimo Rimondini (rimondin@ing.uniroma3.it)
+#     Computer Networks Research Group, Roma Tre University
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, version 3 of the License.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+. /opt/netkit-setup/utils.sh
+
+becho "Enabling login console on tty0"
+ln -s /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty0.service
+
+becho "Enabling root login on tty0"
+sed -i '/^tty1$/i tty0' /etc/securetty
+
+becho "Enabling automatic login on all terminals"
+sed -i -r 's/agetty (.*)/agetty --autologin root \1/' /lib/systemd/system/getty@.service
+
+becho "Disabling respawn rate limiting"
+sed -i -r '/\[Service\]/a StartLimitInterval=0' /lib/systemd/system/getty@.service
+
+becho "Minimizing login messages"
+sed -i -r '/pam_exec.so.*uname/ s/^/#/; /pam_lastlog.so/ s/^/#/' /etc/pam.d/login
+
+# The following tweaks only work in the absence of D-Bus
+#becho "Enabling login on tty0 and reducing the number of extra terminal windows"
+#sed -i 's/getty@tty[0-9]\.service.*/getty@tty0.service/; s/tty2-tty6/tty0/; s/\/dev\/tty2/\/dev\/tty0/' /lib/systemd/system/getty-static.service
+

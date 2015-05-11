@@ -1,0 +1,160 @@
+#!/bin/sh
+
+#     This script is part of Netkit, a network emulation environment based on
+#     the integration of several existing pieces of software.
+#     For more information: http://www.netkit.org/
+#
+#     Copyright (C) 2015
+#         Massimo Rimondini (rimondin@ing.uniroma3.it)
+#     Computer Networks Research Group, Roma Tre University
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, version 3 of the License.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+. /opt/netkit-setup/utils.sh
+
+becho "Installing extra packages"
+
+apt-get update
+cat <<EOF | sed 's/#.*$//' | grep -v "^ *$" | xargs apt-get install -y
+
+# SDN-related tools
+openvswitch-switch
+python-ryu
+ryu-bin
+
+# Packet filtering and DPI
+arptables
+ebtables
+ipset
+iptables
+nftables
+shorewall
+shorewall6
+snort
+
+# DNS
+bind9
+dnsmasq
+pdns-server
+pdnsd
+
+# Routing
+bird
+mrd6
+quagga
+xorp
+
+# Servers and daemons
+apache2
+exim4
+freeradius
+isc-dhcp-server
+nfs-kernel-server
+openssh-server
+proftpd-basic
+radvd
+rinetd
+samba
+snmpd
+squid
+tcpd
+telnetd
+tftpd
+
+# Sniffers
+dsniff
+ssldump
+tcpdump
+tshark
+
+# Connectivity (tunnels, VPNs, VLANs)
+httptunnel
+openvpn
+ppp
+vlan
+
+# Generic network utilities
+alpine
+arping
+bind9-host
+bridge-utils
+curl
+dhcpcd5
+dnsutils
+ftp
+ifenslave
+ipcalc
+ipsec-tools
+iputils-tracepath
+ipv6calc
+isc-dhcp-client
+links
+lynx
+mrtg
+mtr-tiny
+mutt
+ncftp
+netcat-openbsd
+nfs-common
+nmap
+openssh-client
+paris-traceroute
+smbclient
+smcroute
+snmp
+strongswan
+strongswan-charon
+tcpreen
+tcpreplay
+tcpslice
+tcptraceroute
+telnet
+tftp
+wget
+
+# Miscellaneous utilities
+apt-file
+bash-completion
+cpio
+debconf-utils  # Required to obtain debconf-get-selections
+dialog
+expect
+file
+gawk
+gnupg
+hping3
+htop
+info
+ipvsadm
+locate
+lsb-release
+lsof
+mc
+minicom
+netexpect
+openssl
+patch
+psmisc
+python-scapy
+rlwrap
+screen
+sendip
+socat
+strace
+tmux
+uml-utilities
+vacation
+vim
+
+EOF
+

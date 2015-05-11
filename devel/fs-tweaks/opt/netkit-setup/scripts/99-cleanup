@@ -1,0 +1,47 @@
+#!/bin/sh
+
+#     This script is part of Netkit, a network emulation environment based on
+#     the integration of several existing pieces of software.
+#     For more information: http://www.netkit.org/
+#
+#     Copyright (C) 2015
+#         Massimo Rimondini (rimondin@ing.uniroma3.it)
+#     Computer Networks Research Group, Roma Tre University
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, version 3 of the License.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+. /opt/netkit-setup/utils.sh
+
+becho "Cleaning up apt cache"
+apt-get clean
+
+becho "Building locate database"
+/usr/bin/updatedb
+
+becho "Zeroing empty space (this may take a while)"
+trap "/usr/bin/killall dd" TERM INT
+dd if=/dev/zero of=/tmp/filler.dat &
+DD_PID=$!
+while [ -d /proc/$DD_PID ]; do
+   sleep 2
+   kill -USR1 $DD_PID
+done
+echo "Removing temporary file..."
+rm /tmp/filler.dat
+
+becho "Removing Netkit setup scripts"
+rm -r /opt/netkit-setup
+rm /etc/systemd/system/multi-user.target.wants/netkit-setup.service
+
+halt
+

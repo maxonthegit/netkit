@@ -1,0 +1,179 @@
+===============================================================================
+
+This is a patch for the Netkit user-mode Linux kernel.
+For more information: http://www.netkit.org/
+
+This patch makes MAC addresses of network interfaces deterministic: it adds a
+small routine that computes MAC addresses based on a SHA1 hash of the virtual
+machine name and interface ID.
+
+===============================================================================
+
+     Copyright (C) 2015  Massimo Rimondini (rimondini@ing.uniroma3.it)
+     Computer Networks Research Group, Roma Tre University
+     
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, version 3 of the License.
+ 
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+ 
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+===============================================================================
+diff -Naur linux-3.19.3-original/arch/um/drivers/net_kern.c linux-3.19.3/arch/um/drivers/net_kern.c
+--- linux-3.19.3-original/arch/um/drivers/net_kern.c	2015-03-26 14:00:21.000000000 +0100
++++ linux-3.19.3/arch/um/drivers/net_kern.c	2015-04-03 10:21:19.000000000 +0200
+@@ -25,6 +25,13 @@
+ #include <net_kern.h>
+ #include <net_user.h>
+ 
++#include <crypto/sha.h>
++#include <linux/string.h>
++#include <linux/crypto.h>
++#include <linux/err.h>
++#include <linux/scatterlist.h>
++#include "os.h"
++
+ #define DRIVER_NAME "uml-netdev"
+ 
+ static DEFINE_SPINLOCK(opened_lock);
+@@ -295,14 +302,49 @@
+ #endif
+ }
+ 
++#ifdef CONFIG_UML_NET_DETERMINISTIC_MAC
++/*
++ * Compute a SHA1 hash of the UML instance's id and an interface name.
++ */
++static int compute_hash(const char *umid, const char *ifname, char *hash) {
++	char vmif[1024];
++	struct scatterlist sg;
++	struct crypto_hash *tfm;
++	struct hash_desc desc;
++
++	strcpy (vmif, umid);
++	strcat (vmif, ifname);
++
++	tfm = crypto_alloc_hash("sha1", 0, CRYPTO_ALG_ASYNC);
++	if (IS_ERR(tfm))
++		return 1;
++
++	desc.tfm = tfm;
++	desc.flags = 0;
++
++	sg_init_table(&sg, 1);
++	sg_set_buf(&sg, vmif, strlen(vmif));
++
++	if (crypto_hash_digest(&desc, &sg, strlen(vmif), hash)) {
++		crypto_free_hash(tfm);
++		return 1;
++	}
++
++	crypto_free_hash(tfm);
++
++	return 0;
++}
++#endif
++
+ static void setup_etheraddr(struct net_device *dev, char *str)
+ {
+ 	unsigned char *addr = dev->dev_addr;
+ 	char *end;
+ 	int i;
++	u8 hash[SHA1_DIGEST_SIZE];
+ 
+ 	if (str == NULL)
+-		goto random;
++		goto generate_etheraddr;
+ 
+ 	for (i = 0; i < 6; i++) {
+ 		addr[i] = simple_strtoul(str, &end, 16);
+@@ -311,7 +353,7 @@
+ 			printk(KERN_ERR
+ 			       "setup_etheraddr: failed to parse '%s' "
+ 			       "as an ethernet address\n", str);
+-			goto random;
++			goto generate_etheraddr;
+ 		}
+ 		str = end + 1;
+ 	}
+@@ -319,13 +361,13 @@
+ 		printk(KERN_ERR
+ 		       "Attempt to assign a multicast ethernet address to a "
+ 		       "device disallowed\n");
+-		goto random;
++		goto generate_etheraddr;
+ 	}
+ 	if (!is_valid_ether_addr(addr)) {
+ 		printk(KERN_ERR
+ 		       "Attempt to assign an invalid ethernet address to a "
+ 		       "device disallowed\n");
+-		goto random;
++		goto generate_etheraddr;
+ 	}
+ 	if (!is_local_ether_addr(addr)) {
+ 		printk(KERN_WARNING
+@@ -339,10 +381,32 @@
+ 	}
+ 	return;
+ 
+-random:
++generate_etheraddr:
++#ifdef CONFIG_UML_NET_DETERMINISTIC_MAC
++	if (compute_hash(get_umid(), dev->name, hash)) {
++		printk(KERN_WARNING
++		       "Could not compute hash for determining the Ethernet address of"
++		       "device %s. Using random address instead.\n", dev->name);
++		eth_hw_addr_random(dev);
++	}
++	else {
++		dev->addr_assign_type = NET_ADDR_SET;
++		for (i=0; i < 6; i++)
++			addr[i] = (hash[i] + hash[i+6]) % 0x100;
++
++		addr[0] &= 0xfe; /* clear multicast bit */
++		addr[0] |= 0x02; /* set local assignment bit (IEEE802) */
++
++		printk(KERN_INFO
++		       "Assigned the following deterministic MAC address to device %s: "
++		       "%02x:%02x:%02x:%02x:%02x:%02x\n",
++		       dev->name, addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
++	}
++#else
+ 	printk(KERN_INFO
+ 	       "Choosing a random ethernet address for device %s\n", dev->name);
+ 	eth_hw_addr_random(dev);
++#endif
+ }
+ 
+ static DEFINE_SPINLOCK(devices_lock);
+diff -Naur linux-3.19.3-original/arch/um/Kconfig.net linux-3.19.3/arch/um/Kconfig.net
+--- linux-3.19.3-original/arch/um/Kconfig.net	2015-03-26 14:00:21.000000000 +0100
++++ linux-3.19.3/arch/um/Kconfig.net	2015-04-03 10:29:48.000000000 +0200
+@@ -21,6 +21,21 @@
+         enable at least one of the following transport options to actually
+         make use of UML networking.
+ 
++config UML_NET_DETERMINISTIC_MAC
++	bool "Use a deterministic MAC addresses for network interfaces"
++	default y
++	depends on UML_NET
++	help
++        Virtual network devices inside a User-Mode Linux instance must be
++        assigned a MAC (Ethernet) address. If none is specified on the UML
++        command line, one must be automatically computed. If this option is
++        enabled, the address is generated from a SHA1 hash of the umid of the
++        UML instance and the interface name. This makes MAC addresses
++        deterministic, namely for every run of a UML instance with a given name
++        (umid), the same Ethernet interface is always assigned the same MAC
++        address. If this option is disabled, a randomly generated MAC address is
++        used instead, which differs for every run of the same UML instance.
++
+ config UML_NET_ETHERTAP
+ 	bool "Ethertap transport"
+ 	depends on UML_NET

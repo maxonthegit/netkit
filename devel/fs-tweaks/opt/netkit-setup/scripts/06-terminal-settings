@@ -25,3 +25,7 @@
 becho "Setting terminal type to 'xterm'"
 echo "export TERM=xterm" >>/etc/bash.bashrc
 
+# This is useful, e.g., to support correct processing of accented characters
+becho "Setting default locale to C.UTF-8"
+update-locale LC_ALL=C.UTF-8
+

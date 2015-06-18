@@ -66,7 +66,7 @@ radvd
 rinetd
 samba
 snmpd
-squid
+squid3
 tcpd
 telnetd
 tftpd
@@ -124,6 +124,7 @@ wget
 
 # Miscellaneous utilities
 apt-file
+aptitude
 bash-completion
 cpio
 debconf-utils  # Required to obtain debconf-get-selections
@@ -134,6 +135,7 @@ gawk
 gnupg
 hping3
 htop
+imagemagick
 info
 ipvsadm
 locate
@@ -141,11 +143,13 @@ lsb-release
 lsof
 mc
 minicom
+mktemp
 netexpect
 openssl
 patch
 psmisc
 python-scapy
+python3
 rlwrap
 screen
 sendip
@@ -157,4 +161,7 @@ vacation
 vim
 
 EOF
+
+becho "Refreshing list of package files"
+apt-file update
 

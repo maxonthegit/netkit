@@ -355,7 +355,7 @@ else    # ifneq ($(shell whoami),root)
 	$(DEBOOTSTRAP) --unpack-tarball=$(realpath $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz) --arch=$(TARGET_FS_ARCH) $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
 	cp -rd $(FILESYSTEM_TWEAKS_DIR)/* $(FILESYSTEM_MOUNT_DIR)
 # Enable the Netkit setup service
-	ln -s /lib/systemd/netkit/netkit-setup.service $(FILESYSTEM_MOUNT_DIR)/etc/systemd/system/multi-user.target.wants
+	ln -s /etc/systemd/netkit/netkit-setup.service $(FILESYSTEM_MOUNT_DIR)/etc/systemd/system/multi-user.target.wants
 	umount $(FILESYSTEM_MOUNT_DIR)
 # Since the filesystem image has now been more recently updated than the
 # filesystem mount directory, we need to touch the latter

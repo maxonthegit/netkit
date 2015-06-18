@@ -43,7 +43,7 @@ rsyslog
 smbd
 smcroute
 snmpd
-squid
+squid3
 ssh
 strongswan
 uml-utilities

@@ -33,7 +33,7 @@ trap "/usr/bin/killall dd" TERM INT
 dd if=/dev/zero of=/tmp/filler.dat &
 DD_PID=$!
 while [ -d /proc/$DD_PID ]; do
-   sleep 2
+   sleep 5
    kill -USR1 $DD_PID
 done
 echo "Removing temporary file..."

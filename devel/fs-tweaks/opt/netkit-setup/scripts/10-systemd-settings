@@ -26,6 +26,7 @@ becho "Setting systemd default target to multi-user (for non-graphical login)"
 systemctl set-default multi-user
 
 becho "Enabling boot-time Netkit-specific scripts in virtual machines"
-systemctl enable netkit-mount-kernel-modules-dir.service
-systemctl enable netkit-mount-host-dirs.service
-systemctl enable netkit-get-vm-files.service
+systemctl enable /etc/systemd/netkit/netkit-mount-kernel-modules-dir.service
+systemctl enable /etc/systemd/netkit/netkit-mount-host-dirs.service
+systemctl enable /etc/systemd/netkit/netkit-get-vm-files.service
+

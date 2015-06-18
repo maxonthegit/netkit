@@ -25,6 +25,9 @@
 becho "Enabling login console on tty0"
 ln -s /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty0.service
 
+becho "Disabling reserved tty on tty6"
+sed -i 's/.*ReserveVT.*/ReserveVT=0/' /etc/systemd/logind.conf
+
 becho "Enabling root login on tty0"
 sed -i '/^tty1$/i tty0' /etc/securetty
 

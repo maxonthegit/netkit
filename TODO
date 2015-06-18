@@ -7,13 +7,16 @@
 
 === Kernel ===
 
-- MPLS support (by i-maravic)?
+- MPLS support (by i-maravic)? => the project is stuck at kernel release 3.9-rc3, and applying an extracted patch to kernel 4.0 already
+  results in some failures (already existing files that the patch would create anew with different contents)
 - Test functionality of Netkit-specific patches
 - systemd-specific kernel command line parameters (see the systemd man page):
   systemd.show_status=0
 
 === Filesystem ===
 
+- Installation of snort, dnsmasq, isc-dhcp-server and freeradius fails
+- Netkit-specific scripts miss LSB tags and overrides
 - Makefile: add a check that in-vm setup has completed successfully
 - Is mirroring of file permissions from the user's to the group's and other's still required? (in netkit-phase1)
 - Mount modules directory
@@ -41,9 +44,6 @@
 For packages marked with [*], only install if they have not been installed as
 dependencies of other packages
 
-bsd-mailx [*]
-iproute2 [*]
-oinkmaster [*] [related with Snort]
 openbsd-inetd [*]
 pdns-recursor [*]
 procmail [*]
@@ -51,20 +51,8 @@ ike (ike-server)
 pimd [conflicts with smcroute]
 racoon [conflicts with ike-server]
 exim4 [conflicts with postfix]
-aptitude
 bsdutils [*]
-ca-certificates [*]
-dbus [*] [may have adverse effects on started ttys]
-gzip [*]
-bzip2 [*]
 daemon [*]
-locales [setting C.UTF-8 as default locale also solves accented characters input problems]
 ed [*]
 emacs [*]
-findutils [*]
-locate [*] [build the database once and for all]
-imagemagick [*] (?)
-mktemp [*]
-perl [*]
-python [*]
 

@@ -17,6 +17,7 @@
 
 - Installation of snort, dnsmasq, isc-dhcp-server and freeradius fails
 - Netkit-specific scripts miss LSB tags and overrides
+- Check that shared and machine-specific files are correctly copied inside virtual machines (on first boot only)
 - Makefile: add a check that in-vm setup has completed successfully
 - Is mirroring of file permissions from the user's to the group's and other's still required? (in netkit-phase1)
 - motd

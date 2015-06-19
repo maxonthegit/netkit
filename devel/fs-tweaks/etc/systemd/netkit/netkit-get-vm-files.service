@@ -30,9 +30,8 @@ ConditionPathExists=!/etc/vhostconfigured
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/etc/systemd/netkit/get-vm-files.sh
-#StandardOutput=journal+console
-#StandardError=inherit
+ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/get-vm-files.sh
+After=netkit-mount-host-dirs.service
 
 [Install]
 WantedBy=basic.target

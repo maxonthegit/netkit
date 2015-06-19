@@ -29,9 +29,7 @@ ConditionKernelCommandLine=modules
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/bin/xargs /etc/systemd/netkit/mount-kernel-modules-dir.sh < /proc/cmdline
-#StandardOutput=journal+console
-#StandardError=inherit
+ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/mount-kernel-modules-dir.sh
 
 [Install]
 WantedBy=basic.target

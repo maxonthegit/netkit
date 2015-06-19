@@ -25,20 +25,10 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-################## TODO
-################## TODO
-################## TODO
-################## TODO
-################## TODO
-
-for KERNEL_PARAMETER in "$@"; do
-   if [ "$(echo "$KERNEL_PARAMETER" | cut -d = -f 1)" = "modules" ]; then
-      MODULES_DIR="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
-   fi
-done
-
 if [ "$(echo /hostlab/shared/*)" != "/hostlab/shared/*" ]; then
-   vecho "Copying shared files from /hostlab/shared..."
+   echo "Copying shared files from /hostlab/shared..."
+   # Use tar instead of plain cp in order to be able to easily
+   # exclude files from the copy. In addition,
    # tar all the files inside the directory instead of just the
    # directory itself, in order to properly cope with virtual
    # machine directories that are symbolic links.
@@ -49,8 +39,9 @@ if [ "$(echo /hostlab/shared/*)" != "/hostlab/shared/*" ]; then
 fi
 
 if [ "$(echo /hostlab/$HOSTNAME/*)" != "/hostlab/$HOSTNAME/*" ]; then
-   vecho "Copying $HOSTNAME specific files from /hostlab/$HOSTNAME/..."
+   echo "Copying $HOSTNAME specific files from /hostlab/$HOSTNAME/..."
    cd /hostlab/$HOSTNAME/
    tar --exclude=CVS --exclude=.svn -c * | tar --no-same-owner -C / -xv | \
    xargs stat --format="%a %n" | { while read PERM FILE; do chmod ${PERM:0:1}${PERM:0:1}${PERM:0:1} $FILE; done; }
 fi
+

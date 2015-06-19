@@ -1,14 +1,9 @@
-#!/bin/bash
-
-#     This script is part of Netkit, a network emulation environment
-#     based on the integration of several existing pieces of software.
+#     This systemd unit configuration is part of Netkit, a network emulation
+#     environment based on the integration of several existing pieces of
+#     software.
 #     For more information: http://www.netkit.org/
 #
-#     Copyright (C) 2002-2009, 2015
-#         Maurizio Patrignani
-#         Stefano Pettini
-#         Maurizio Pizzonia
-#         Fabio Ricci
+#     Copyright (C) 2015
 #         Massimo Rimondini (rimondin@ing.uniroma3.it)
 #     Computer Networks Research Group, Roma Tre University
 # 
@@ -24,16 +19,21 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-for KERNEL_PARAMETER in "$@"; do
-   if [ "$(echo "$KERNEL_PARAMETER" | cut -d = -f 1)" = "modules" ]; then
-      MODULES_DIR="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
-   fi
-done
+[Unit]
+Description=Setting hostname and terminal title
+DefaultDependencies=no
+Conflicts=shutdown.target
+Before=systemd-sysctl.service
+Before=netkit-get-vm-files.service
+ConditionKernelCommandLine=name
+ConditionPathExists=!/etc/vhostconfigured
 
-mkdir -p /lib/modules
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/set-hostname.sh
+After=netkit-mount-host-dirs.service
 
-if [ -n "$MODULES_DIR" ]; then
-   # Write access is needed for depmod in order to work properly
-   mount none /lib/modules/ -t hostfs -o rw,"$MODULES_DIR/lib/modules"
-fi
+[Install]
+WantedBy=basic.target
 

@@ -29,12 +29,14 @@ for KERNEL_PARAMETER in "$@"; do
    case "$PARAM_NAME" in
       hosthome)
          HOSTHOME="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
+         mkdir -p /hosthome
+         mount none /hosthome -t hostfs -o rw,"$HOSTHOME"
          ;;
       hostlab)
          HOSTLAB="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
+         mkdir -p /hostlab
+         mount none /hostlab -t hostfs -o rw,"$HOSTLAB"
          ;;
    esac
 done
 
-[ -n "$HOSTHOME" ] && mount none /hosthome -t hostfs -o rw,"$HOSTHOME"
-[ -n "$HOSTLAB" ] && mount none /hostlab -t hostfs -o rw,"$HOSTLAB"

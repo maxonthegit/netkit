@@ -129,6 +129,7 @@ bash-completion
 cpio
 debconf-utils  # Required to obtain debconf-get-selections
 dialog
+emacs
 expect
 file
 gawk

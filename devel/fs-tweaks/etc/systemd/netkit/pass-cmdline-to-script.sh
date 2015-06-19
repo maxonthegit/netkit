@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 #     This script is part of Netkit, a network emulation environment
 #     based on the integration of several existing pieces of software.
@@ -24,16 +24,9 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-for KERNEL_PARAMETER in "$@"; do
-   if [ "$(echo "$KERNEL_PARAMETER" | cut -d = -f 1)" = "modules" ]; then
-      MODULES_DIR="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
-   fi
-done
 
-mkdir -p /lib/modules
-
-if [ -n "$MODULES_DIR" ]; then
-   # Write access is needed for depmod in order to work properly
-   mount none /lib/modules/ -t hostfs -o rw,"$MODULES_DIR/lib/modules"
-fi
+# Run a specified command (usually, a different script) passing the kernel
+# command line parameters as arguments. This script can be conveniently
+# used in systemd unit configuration files.
+/usr/bin/xargs "$1" < /proc/cmdline
 

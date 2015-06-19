@@ -25,15 +25,10 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 for KERNEL_PARAMETER in "$@"; do
-   if [ "$(echo "$KERNEL_PARAMETER" | cut -d = -f 1)" = "modules" ]; then
-      MODULES_DIR="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
+   PARAM_NAME=$(echo "$KERNEL_PARAMETER" | cut -d = -f 1)
+   if [ "$PARAM_NAME" == "name" ]; then
+      HOSTNAME="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
+      /usr/bin/hostnamectl set-hostname "$HOSTNAME"
    fi
 done
-
-mkdir -p /lib/modules
-
-if [ -n "$MODULES_DIR" ]; then
-   # Write access is needed for depmod in order to work properly
-   mount none /lib/modules/ -t hostfs -o rw,"$MODULES_DIR/lib/modules"
-fi
 

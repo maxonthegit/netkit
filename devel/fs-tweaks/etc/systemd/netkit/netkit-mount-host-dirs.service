@@ -30,9 +30,7 @@ ConditionKernelCommandLine=|hostlab
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/etc/systemd/netkit/mount-host-dirs.sh
-#StandardOutput=journal+console
-#StandardError=inherit
+ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/mount-host-dirs.sh
 
 [Install]
 WantedBy=basic.target

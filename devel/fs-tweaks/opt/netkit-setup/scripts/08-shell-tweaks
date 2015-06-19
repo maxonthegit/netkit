@@ -22,8 +22,15 @@
 
 . /opt/netkit-setup/utils.sh
 
-becho "Applying a few convenient aliases for bash commands"
-cat >>/etc/bash.bashrc <<EOF
+becho "Applying a few convenient settings for bash"
+# Using a quoted EOF prevents any kind of expansions in the
+# following here-document
+cat >>/etc/bash.bashrc <<"EOF"
+
+# Netkit-specific tweaks
+echo -e "\e]0;$(hostname) ($(basename $(tty)))\a"
+echo -e "\e]2;$(hostname) ($(basename $(tty)))\a"
+
 alias grep='grep --color=auto'
 alias ls='ls --color=auto'
 alias l='ls -l --color=auto'

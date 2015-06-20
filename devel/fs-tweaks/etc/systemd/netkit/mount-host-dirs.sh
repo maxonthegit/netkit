@@ -24,19 +24,20 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+# Avoid spanning too many subprocesses in the for cycle, which is
+# detrimental for performance. The `for' shell primitive is still used here
+# to correctly split quoted parameters.
+
 for KERNEL_PARAMETER in "$@"; do
-   PARAM_NAME=$(echo "$KERNEL_PARAMETER" | cut -d = -f 1)
-   case "$PARAM_NAME" in
-      hosthome)
-         HOSTHOME="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
-         mkdir -p /hosthome
-         mount none /hosthome -t hostfs -o rw,"$HOSTHOME"
-         ;;
-      hostlab)
-         HOSTLAB="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
-         mkdir -p /hostlab
-         mount none /hostlab -t hostfs -o rw,"$HOSTLAB"
-         ;;
-   esac
-done
+   echo $KERNEL_PARAMETER
+done | awk -F= '
+   ($1=="hosthome") {
+      system("mkdir -p /hosthome")
+      system("mount none /hosthome -t hostfs -o rw,\"" substr($0,10) "\"")
+   }
+   ($1=="hostlab") {
+      system("mkdir -p /hostlab")
+      system("mount none /hostlab -t hostfs -o rw,\"" substr($0,9) "\"")
+   }'
 

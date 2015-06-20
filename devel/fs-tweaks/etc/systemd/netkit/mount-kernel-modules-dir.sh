@@ -24,11 +24,15 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-for KERNEL_PARAMETER in "$@"; do
-   if [ "$(echo "$KERNEL_PARAMETER" | cut -d = -f 1)" = "modules" ]; then
-      MODULES_DIR="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
-   fi
-done
+# Split kernel command line arguments using a standard `for' cycle, then
+# use awk for faster extraction of the argument of interest.
+MODULES_DIR=$(for KERNEL_PARAMETER in "$@"; do
+   echo $KERNEL_PARAMETER
+done | awk -F= '
+   ($1=="modules") {
+      print substr($0,9)
+   }'
+)
 
 mkdir -p /lib/modules
 

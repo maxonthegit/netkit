@@ -1,0 +1,57 @@
+===============================================================================
+
+This is a patch for the Netkit user-mode Linux kernel.
+For more information: http://www.netkit.org/
+
+This patch modifies the default title of a UML terminal window to be more
+compliant with the Netkit convention for virtual machine window titles.
+
+===============================================================================
+
+     Copyright (C) 2015  Massimo Rimondini (rimondini@ing.uniroma3.it)
+     Computer Networks Research Group, Roma Tre University
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, version 3 of the License.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=================================================================================
+diff -Naur linux-4.0-original/arch/um/drivers/line.c linux-4.0/arch/um/drivers/line.c
+--- linux-4.0-original/arch/um/drivers/line.c	2015-06-20 16:32:13.000000000 +0200
++++ linux-4.0/arch/um/drivers/line.c	2015-06-20 16:35:22.000000000 +0200
+@@ -756,13 +756,13 @@
+ 	if (*umid == '\0')
+ 		return base;
+ 
+-	len = strlen(base) + strlen(" ()") + strlen(umid) + 1;
++	len = strlen(base) + strlen(umid) + strlen(" ()") + 1;
+ 	title = kmalloc(len, GFP_KERNEL);
+ 	if (title == NULL) {
+ 		printk(KERN_ERR "Failed to allocate buffer for xterm title\n");
+ 		return base;
+ 	}
+ 
+-	snprintf(title, len, "%s (%s)", base, umid);
++	snprintf(title, len, "%s (%s)", umid, base);
+ 	return title;
+ }
+diff -Naur linux-4.0-original/arch/um/drivers/stdio_console.c linux-4.0/arch/um/drivers/stdio_console.c
+--- linux-4.0-original/arch/um/drivers/stdio_console.c	2015-06-20 16:32:13.000000000 +0200
++++ linux-4.0/arch/um/drivers/stdio_console.c	2015-06-20 16:34:27.000000000 +0200
+@@ -36,7 +36,7 @@
+ /* Almost const, except that xterm_title may be changed in an initcall */
+ static struct chan_opts opts = {
+ 	.announce 	= stdio_announce,
+-	.xterm_title	= "Virtual Console #%d",
++	.xterm_title	= "tty%d",
+ 	.raw		= 1,
+ };
+ 

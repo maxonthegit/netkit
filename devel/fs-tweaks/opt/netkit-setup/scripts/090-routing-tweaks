@@ -22,17 +22,16 @@
 
 . /opt/netkit-setup/utils.sh
 
-becho "Applying a few convenient settings for bash"
-# Using a quoted EOF prevents any kind of expansions in the
-# following here-document
-cat >>/etc/bash.bashrc <<"EOF"
+becho "Enabling forwarding"
+sed -i 's/net\.ipv4\.ip_forward/net.ipv4.ip_forward=1/; s/net\.ipv6\.conf\.all\.forwarding/net.ipv6.conf.all.forwarding=1/' /etc/sysctl.conf
 
-# Netkit-specific tweaks
-echo -e "\e]0;$(hostname) ($(basename $(tty)))\a"
-echo -e "\e]2;$(hostname) ($(basename $(tty)))\a"
+becho "Disabling ICMP rate limiting"
+echo "net.ipv4.icmp_ratelimit=0" >> /etc/sysctl.conf
+echo "net.ipv6.icmp.ratelimit=0" >> /etc/sysctl.conf
 
-alias grep='grep --color=auto'
-alias ls='ls --color=auto'
-alias l='ls -l --color=auto'
+becho "Configuring resolv.conf"
+cat >/etc/resolv.conf <<EOF
+# search default.domain.suffix
+# nameserver 10.0.2.3
 EOF
 

@@ -24,11 +24,17 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-for KERNEL_PARAMETER in "$@"; do
-   PARAM_NAME=$(echo "$KERNEL_PARAMETER" | cut -d = -f 1)
-   if [ "$PARAM_NAME" == "name" ]; then
-      HOSTNAME="$(echo "$KERNEL_PARAMETER" | cut -d = -f 2-)"
-      /usr/bin/hostnamectl set-hostname "$HOSTNAME"
-   fi
-done
+# Split kernel command line arguments using a standard `for' cycle, then
+# use awk for faster extraction of the argument of interest.
+NEW_HOSTNAME=$(for KERNEL_PARAMETER in "$@"; do
+   echo $KERNEL_PARAMETER
+done | awk -F= '
+   ($1=="name") {
+      print substr($0,6)
+   }'
+)
+
+if [ -n "$NEW_HOSTNAME" ]; then
+   /usr/bin/hostnamectl set-hostname "$HOSTNAME"
+fi
 

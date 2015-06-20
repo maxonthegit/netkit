@@ -22,13 +22,13 @@
 
 . /opt/netkit-setup/utils.sh
 
-becho "Enabling forwarding"
-sed -i 's/net\.ipv4\.ip_forward/net.ipv4.ip_forward=1/; s/net\.ipv6\.conf\.all\.forwarding/net.ipv6.conf.all.forwarding=1/' /etc/sysctl.conf
+becho "Setting pre-login welcome messages"
+# Clear /etc/motd
+: > /etc/motd
 
-becho "Disabling ICMP rate limiting"
-echo "net.ipv4.icmp_ratelimit=0" >> /etc/sysctl.conf
-echo "net.ipv6.icmp.ratelimit=0" >> /etc/sysctl.conf
-
-becho "Configuring resolv.conf"
-echo "# nameserver 10.0.2.3" > /etc/resolv.conf
+cat >/etc/issue <<EOF
+Welcome to Netkit release $(</etc/netkit-version) (kernel \\r)
+FS built on $(date -R),
+based on \\S
+EOF
 

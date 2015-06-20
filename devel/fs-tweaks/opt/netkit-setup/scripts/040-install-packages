@@ -127,8 +127,10 @@ apt-file
 aptitude
 bash-completion
 cpio
+daemon
 debconf-utils  # Required to obtain debconf-get-selections
 dialog
+ed
 emacs
 expect
 file

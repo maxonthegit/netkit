@@ -24,5 +24,5 @@
 
 becho "Setting up default hostname"
 
-echo netkit >/etc/hostname
+/usr/bin/hostnamectl set-hostname netkit
 

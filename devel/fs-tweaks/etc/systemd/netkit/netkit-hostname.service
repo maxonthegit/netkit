@@ -23,7 +23,7 @@
 Description=Setting hostname and terminal title
 DefaultDependencies=no
 Conflicts=shutdown.target
-Before=systemd-sysctl.service
+Before=systemd-user-sessions.service
 Before=netkit-get-vm-files.service
 ConditionKernelCommandLine=name
 ConditionPathExists=!/etc/vhostconfigured

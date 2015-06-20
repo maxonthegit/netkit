@@ -1,6 +1,7 @@
-#     This systemd unit configuration is part of Netkit, a network emulation
-#     environment based on the integration of several existing pieces of
-#     software.
+#!/bin/sh
+
+#     This script is part of Netkit, a network emulation environment based on
+#     the integration of several existing pieces of software.
 #     For more information: http://www.netkit.org/
 #
 #     Copyright (C) 2015
@@ -19,19 +20,19 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-[Unit]
-Description=Mount host directories
-DefaultDependencies=no
-Conflicts=shutdown.target
-Before=netkit-get-vm-files.service
-Before=systemd-user-sessions.service
-ConditionKernelCommandLine=|hosthome
-ConditionKernelCommandLine=|hostlab
+. /opt/netkit-setup/utils.sh
 
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/mount-host-dirs.sh
+becho "Applying a few convenient settings for bash"
+# Using a quoted EOF prevents any kind of expansions in the
+# following here-document
+cat >>/etc/bash.bashrc <<"EOF"
 
-[Install]
-WantedBy=basic.target
+# Netkit-specific tweaks
+echo -n -e "\e]0;$(hostname) ($(basename $(tty)))\a"
+echo -n -e "\e]2;$(hostname) ($(basename $(tty)))\a"
+
+alias grep='grep --color=auto'
+alias ls='ls --color=auto'
+alias l='ls -l --color=auto'
+EOF
+

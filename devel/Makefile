@@ -300,6 +300,8 @@ FILESYSTEM_TWEAKS_DIR:=fs-tweaks
 # Sample value for FILESYSTEM_TWEAKS_DIR: fs-tweaks
 FILESYSTEM_PACKAGES_DEBCONF:=netkit-fs-debconf
 # Sample value for FILESYSTEM_PACKAGES_DEBCONF: netkit-fs-debconf
+FILESYSTEM_PACKAGES_LIST_FROM_VM:=/tmp/netkit-package-list
+# Sample value for FILESYSTEM_PACKAGES_LIST_FROM_VM: /tmp/netkit-package-list
 
 FILESYSTEM_TARGET_DIR:=$(NETKIT_HOME)/fs
 # Sample value for FILESYSTEM_TARGET_DIR: netkit/fs
@@ -333,6 +335,8 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 	$(call display_message,filesystem,"Creating a hard link to the filesystem image in its default location")
 	mkdir -p $(FILESYSTEM_TARGET_DIR)
 	cp -fl $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
+	$(call display_message,filesystem,"Saving list of packages")
+	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
 .filesystem-setup-complete: $(FILESYSTEM_MOUNT_DIR) slirp
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
@@ -410,3 +414,4 @@ clean-kernel:
 	rm -fr $(KERNEL_BUILD_DIR) $(KERNEL_PACKAGE_FILE)
 clean-filesystem:
 	rm -fr $(FILESYSTEM_BUILD_DIR) slirp .filesystem-setup-complete
+

@@ -22,7 +22,18 @@
 
 . /opt/netkit-setup/utils.sh
 
-becho "Setting up default hostname"
-echo netkit-vm > /etc/hostname
-/bin/hostname -F /etc/hostname
+becho "Generating list of installed packages"
+mkdir -p /temphost
+mount -t hostfs -o rw,/tmp none /temphost
+echo "=== INSTALLED PACKAGES ===" > /tmp/netkit-package-list
+echo >> /tmp/netkit-package-list
+/usr/bin/dpkg-query -W --showformat '${Package;-35}\t${Version} (${Architecture})\t${binary:Summary}\n' | grep -v "^lib" >> /tmp/netkit-package-list
+echo >> /tmp/netkit-package-list
+echo >> /tmp/netkit-package-list
+echo "=== INSTALLED LIBRARIES ===" > /tmp/netkit-package-list
+echo >> /tmp/netkit-package-list
+/usr/bin/dpkg-query -W --showformat '${Package;-35}\t${Version} (${Architecture})\t${binary:Summary}\n' | grep "^lib" >>
+ /tmp/netkit-package-list
+umount /temphost
+rmdir /temphost
 

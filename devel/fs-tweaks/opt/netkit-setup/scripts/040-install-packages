@@ -25,6 +25,12 @@
 becho "Installing extra packages"
 
 apt-get update
+
+# Pre-configure package options to avoid interactive requests
+/usr/bin/debconf-set-selections < /netkit-fs-debconf
+rm /netkit-fs-debconf
+
+# First pass: install most packages
 cat <<EOF | sed 's/#.*$//' | grep -v "^ *$" | xargs apt-get install -y
 
 # SDN-related tools
@@ -44,7 +50,6 @@ snort
 
 # DNS
 bind9
-dnsmasq
 pdns-server
 pdnsd
 
@@ -97,7 +102,6 @@ ipcalc
 ipsec-tools
 iputils-tracepath
 ipv6calc
-isc-dhcp-client
 links
 lynx
 mrtg
@@ -163,6 +167,24 @@ uml-utilities
 vacation
 vim
 
+EOF
+
+
+# Second pass: stop conflicting services (i.e., those for which
+# multiple alternative daemons are about to be installed) and install
+# additional packages whose setup scripts are expected to fail
+# (note: this requires using `|| true' because bash would abort
+# script execution otherwise)
+while read SERVICE; do
+   systemctl stop $SERVICE
+done <<EOF
+bind9
+pdnsd
+EOF
+
+cat <<EOF | sed 's/#.*$//' | grep -v "^ *$" | xargs apt-get install -y || true
+dnsmasq # Requires stopping bind9 before being installed
+isc-dhcp-client # Installation scripts fail because they attempt to start the service without any configured interfaces to listen on, and because the only available interface is of type "Serial Line IP", not Ethernet
 EOF
 
 becho "Refreshing list of package files"

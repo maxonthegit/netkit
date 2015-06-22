@@ -1,6 +1,7 @@
-#     This systemd unit configuration is part of Netkit, a network emulation
-#     environment based on the integration of several existing pieces of
-#     software.
+#!/bin/sh
+
+#     This script is part of Netkit, a network emulation environment based on
+#     the integration of several existing pieces of software.
 #     For more information: http://www.netkit.org/
 #
 #     Copyright (C) 2015
@@ -19,16 +20,13 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-[Unit]
-Description=Netkit setup scripts
+. /opt/netkit-setup/utils.sh
 
-[Service]
-Type=idle
-ExecStart=/bin/run-parts --exit-on-error /opt/netkit-setup/scripts
-TimeoutSec=0
-RemainAfterExit=no
-FailureAction=poweroff-force
-SysVStartPriority=99
-StandardOutput=tty
-StandardInput=tty
+becho "Creating temporary file (in /tmp on the host) that determines that the setup is running"
+mkdir -p /temphost
+mount -t hostfs -o rw,/tmp none /temphost
+: > /temphost/.netkit-setup-running
+# Remove the directory in order to prevent it (or its contents) from being indexed by locate
+umount /temphost
+rmdir /temphost
 

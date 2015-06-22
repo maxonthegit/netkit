@@ -43,5 +43,12 @@ becho "Removing Netkit setup scripts"
 rm -r /opt/netkit-setup
 rm /etc/systemd/system/multi-user.target.wants/netkit-setup.service
 
+becho "Removing temporary file on /tmp on the host"
+mkdir -p /temphost
+mount -t hostfs -o rw,/tmp none /temphost
+rm /temphost/.netkit-setup-running
+umount /temphost
+rmdir /temphost
+
 halt
 

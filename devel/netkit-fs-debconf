@@ -1,0 +1,344 @@
+# Create a self-signed X.509 certificate?
+strongswan-starter	strongswan/x509_self_signed	boolean	true
+# Common Name for the X.509 certificate request:
+strongswan-starter	strongswan/x509_common_name	string	
+# Time zone:
+# Choices: Aden, Almaty, Amman, Anadyr, Aqtau, Aqtobe, Ashgabat, Baghdad, Bahrain, Baku, Bangkok, Beirut, Bishkek, Brunei, Chita, Choibalsan, Chongqing, Colombo, Damascus, Dhaka, Dili, Dubai, Dushanbe, Gaza, Harbin, Hebron, Ho_Chi_Minh, Hong_Kong, Hovd, Irkutsk, Istanbul, Jakarta, Jayapura, Jerusalem, Kabul, Kamchatka, Karachi, Kashgar, Kathmandu, Khandyga, Kolkata, Krasnoyarsk, Kuala_Lumpur, Kuching, Kuwait, Macau, Magadan, Makassar, Manila, Muscat, Nicosia, Novokuznetsk, Novosibirsk, Omsk, Oral, Phnom_Penh, Pontianak, Pyongyang, Qatar, Qyzylorda, Rangoon, Riyadh, Sakhalin, Samarkand, Seoul, Shanghai, Singapore, Srednekolymsk, Taipei, Tashkent, Tbilisi, Tehran, Tel_Aviv, Thimphu, Tokyo, Ujung_Pandang, Ulaanbaatar, Urumqi, Ust-Nera, Vientiane, Vladivostok, Yakutsk, Yekaterinburg, Yerevan
+tzdata	tzdata/Zones/Asia	select	
+# Do you want to change the GID of user ?
+base-passwd	base-passwd/user-change-gid	boolean	true
+# Certificates to activate:
+# Choices: mozilla/A-Trust-nQual-03.crt, mozilla/ACCVRAIZ1.crt, mozilla/ACEDICOM_Root.crt, mozilla/AC_Raíz_Certicámara_S.A..crt, mozilla/Actalis_Authentication_Root_CA.crt, mozilla/AddTrust_External_Root.crt, mozilla/AddTrust_Low-Value_Services_Root.crt, mozilla/AddTrust_Public_Services_Root.crt, mozilla/AddTrust_Qualified_Certificates_Root.crt, mozilla/AffirmTrust_Commercial.crt, mozilla/AffirmTrust_Networking.crt, mozilla/AffirmTrust_Premium.crt, mozilla/AffirmTrust_Premium_ECC.crt, mozilla/ApplicationCA_-_Japanese_Government.crt, mozilla/Atos_TrustedRoot_2011.crt, mozilla/Autoridad_de_Certificacion_Firmaprofesional_CIF_A62634068.crt, mozilla/Baltimore_CyberTrust_Root.crt, mozilla/Buypass_Class_2_CA_1.crt, mozilla/Buypass_Class_2_Root_CA.crt, mozilla/Buypass_Class_3_CA_1.crt, mozilla/Buypass_Class_3_Root_CA.crt, mozilla/CA_Disig.crt, mozilla/CA_Disig_Root_R1.crt, mozilla/CA_Disig_Root_R2.crt, mozilla/CFCA_EV_ROOT.crt, mozilla/CNNIC_ROOT.crt, mozilla/COMODO_Certification_Authority.crt, mozilla/COMODO_ECC_Certification_Authority.crt, mozilla/COMODO_RSA_Certification_Authority.crt, mozilla/Camerfirma_Chambers_of_Commerce_Root.crt, mozilla/Camerfirma_Global_Chambersign_Root.crt, mozilla/Certigna.crt, mozilla/Certinomis_-_Autorité_Racine.crt, mozilla/Certplus_Class_2_Primary_CA.crt, mozilla/Certum_Root_CA.crt, mozilla/Certum_Trusted_Network_CA.crt, mozilla/Chambers_of_Commerce_Root_-_2008.crt, mozilla/China_Internet_Network_Information_Center_EV_Certificates_Root.crt, mozilla/ComSign_CA.crt, mozilla/ComSign_Secured_CA.crt, mozilla/Comodo_AAA_Services_root.crt, mozilla/Comodo_Secure_Services_root.crt, mozilla/Comodo_Trusted_Services_root.crt, mozilla/Cybertrust_Global_Root.crt, mozilla/D-TRUST_Root_Class_3_CA_2_2009.crt, mozilla/D-TRUST_Root_Class_3_CA_2_EV_2009.crt, mozilla/DST_ACES_CA_X6.crt, mozilla/DST_Root_CA_X3.crt, mozilla/Deutsche_Telekom_Root_CA_2.crt, mozilla/DigiCert_Assured_ID_Root_CA.crt, mozilla/DigiCert_Assured_ID_Root_G2.crt, mozilla/DigiCert_Assured_ID_Root_G3.crt, mozilla/DigiCert_Global_Root_CA.crt, mozilla/DigiCert_Global_Root_G2.crt, mozilla/DigiCert_Global_Root_G3.crt, mozilla/DigiCert_High_Assurance_EV_Root_CA.crt, mozilla/DigiCert_Trusted_Root_G4.crt, mozilla/Digital_Signature_Trust_Co._Global_CA_1.crt, mozilla/Digital_Signature_Trust_Co._Global_CA_3.crt, mozilla/E-Tugra_Certification_Authority.crt, mozilla/EBG_Elektronik_Sertifika_Hizmet_Sağlayıcısı.crt, mozilla/EC-ACC.crt, mozilla/EE_Certification_Centre_Root_CA.crt, mozilla/Entrust.net_Premium_2048_Secure_Server_CA.crt, mozilla/Entrust_Root_Certification_Authority.crt, mozilla/Entrust_Root_Certification_Authority_-_EC1.crt, mozilla/Entrust_Root_Certification_Authority_-_G2.crt, mozilla/Equifax_Secure_CA.crt, mozilla/Equifax_Secure_Global_eBusiness_CA.crt, mozilla/Equifax_Secure_eBusiness_CA_1.crt, mozilla/GeoTrust_Global_CA.crt, mozilla/GeoTrust_Global_CA_2.crt, mozilla/GeoTrust_Primary_Certification_Authority.crt, mozilla/GeoTrust_Primary_Certification_Authority_-_G2.crt, mozilla/GeoTrust_Primary_Certification_Authority_-_G3.crt, mozilla/GeoTrust_Universal_CA.crt, mozilla/GeoTrust_Universal_CA_2.crt, mozilla/GlobalSign_ECC_Root_CA_-_R4.crt, mozilla/GlobalSign_ECC_Root_CA_-_R5.crt, mozilla/GlobalSign_Root_CA.crt, mozilla/GlobalSign_Root_CA_-_R2.crt, mozilla/GlobalSign_Root_CA_-_R3.crt, mozilla/Global_Chambersign_Root_-_2008.crt, mozilla/Go_Daddy_Class_2_CA.crt, mozilla/Go_Daddy_Root_Certificate_Authority_-_G2.crt, mozilla/Hellenic_Academic_and_Research_Institutions_RootCA_2011.crt, mozilla/Hongkong_Post_Root_CA_1.crt, mozilla/IGC_A.crt, mozilla/IdenTrust_Commercial_Root_CA_1.crt, mozilla/IdenTrust_Public_Sector_Root_CA_1.crt, mozilla/Izenpe.com.crt, mozilla/Juur-SK.crt, mozilla/Microsec_e-Szigno_Root_CA.crt, mozilla/Microsec_e-Szigno_Root_CA_2009.crt, mozilla/NetLock_Arany_=Class_Gold=_Főtanúsítvány.crt, mozilla/NetLock_Business_=Class_B=_Root.crt, mozilla/NetLock_Express_=Class_C=_Root.crt, mozilla/NetLock_Notary_=Class_A=_Root.crt, mozilla/NetLock_Qualified_=Class_QA=_Root.crt, mozilla/Network_Solutions_Certificate_Authority.crt, mozilla/OISTE_WISeKey_Global_Root_GA_CA.crt, mozilla/PSCProcert.crt, mozilla/QuoVadis_Root_CA.crt, mozilla/QuoVadis_Root_CA_1_G3.crt, mozilla/QuoVadis_Root_CA_2.crt, mozilla/QuoVadis_Root_CA_2_G3.crt, mozilla/QuoVadis_Root_CA_3.crt, mozilla/QuoVadis_Root_CA_3_G3.crt, mozilla/RSA_Security_2048_v3.crt, mozilla/Root_CA_Generalitat_Valenciana.crt, mozilla/S-TRUST_Authentication_and_Encryption_Root_CA_2005_PN.crt, mozilla/S-TRUST_Universal_Root_CA.crt, mozilla/SG_TRUST_SERVICES_RACINE.crt, mozilla/SecureSign_RootCA11.crt, mozilla/SecureTrust_CA.crt, mozilla/Secure_Global_CA.crt, mozilla/Security_Communication_EV_RootCA1.crt, mozilla/Security_Communication_RootCA2.crt, mozilla/Security_Communication_Root_CA.crt, mozilla/Sonera_Class_1_Root_CA.crt, mozilla/Sonera_Class_2_Root_CA.crt, mozilla/Staat_der_Nederlanden_EV_Root_CA.crt, mozilla/Staat_der_Nederlanden_Root_CA.crt, mozilla/Staat_der_Nederlanden_Root_CA_-_G2.crt, mozilla/Staat_der_Nederlanden_Root_CA_-_G3.crt, mozilla/Starfield_Class_2_CA.crt, mozilla/Starfield_Root_Certificate_Authority_-_G2.crt, mozilla/Starfield_Services_Root_Certificate_Authority_-_G2.crt, mozilla/StartCom_Certification_Authority.crt, mozilla/StartCom_Certification_Authority_2.crt, mozilla/StartCom_Certification_Authority_G2.crt, mozilla/SwissSign_Gold_CA_-_G2.crt, mozilla/SwissSign_Platinum_CA_-_G2.crt, mozilla/SwissSign_Silver_CA_-_G2.crt, mozilla/Swisscom_Root_CA_1.crt, mozilla/Swisscom_Root_CA_2.crt, mozilla/Swisscom_Root_EV_CA_2.crt, mozilla/T-TeleSec_GlobalRoot_Class_2.crt, mozilla/T-TeleSec_GlobalRoot_Class_3.crt, mozilla/TC_TrustCenter_Class_2_CA_II.crt, mozilla/TC_TrustCenter_Class_3_CA_II.crt, mozilla/TC_TrustCenter_Universal_CA_I.crt, mozilla/TURKTRUST_Certificate_Services_Provider_Root_1.crt, mozilla/TURKTRUST_Certificate_Services_Provider_Root_2.crt, mozilla/TURKTRUST_Certificate_Services_Provider_Root_2007.crt, mozilla/TWCA_Global_Root_CA.crt, mozilla/TWCA_Root_Certification_Authority.crt, mozilla/Taiwan_GRCA.crt, mozilla/TeliaSonera_Root_CA_v1.crt, mozilla/Trustis_FPS_Root_CA.crt, mozilla/TÜBİTAK_UEKAE_Kök_Sertifika_Hizmet_Sağlayıcısı_-_Sürüm_3.crt, mozilla/USERTrust_ECC_Certification_Authority.crt, mozilla/USERTrust_RSA_Certification_Authority.crt, mozilla/UTN_DATACorp_SGC_Root_CA.crt, mozilla/UTN_USERFirst_Email_Root_CA.crt, mozilla/UTN_USERFirst_Hardware_Root_CA.crt, mozilla/VeriSign_Class_3_Public_Primary_Certification_Authority_-_G4.crt, mozilla/VeriSign_Class_3_Public_Primary_Certification_Authority_-_G5.crt, mozilla/VeriSign_Universal_Root_Certification_Authority.crt, mozilla/Verisign_Class_1_Public_Primary_Certification_Authority.crt, mozilla/Verisign_Class_1_Public_Primary_Certification_Authority_-_G2.crt, mozilla/Verisign_Class_1_Public_Primary_Certification_Authority_-_G3.crt, mozilla/Verisign_Class_2_Public_Primary_Certification_Authority_-_G2.crt, mozilla/Verisign_Class_2_Public_Primary_Certification_Authority_-_G3.crt, mozilla/Verisign_Class_3_Public_Primary_Certification_Authority.crt, mozilla/Verisign_Class_3_Public_Primary_Certification_Authority_-_G2.crt, mozilla/Verisign_Class_3_Public_Primary_Certification_Authority_-_G3.crt, mozilla/Verisign_Class_3_Public_Primary_Certification_Authority_2.crt, mozilla/Verisign_Class_4_Public_Primary_Certification_Authority_-_G3.crt, mozilla/Visa_eCommerce_Root.crt, mozilla/WellsSecure_Public_Root_Certificate_Authority.crt, mozilla/WoSign.crt, mozilla/WoSign_China.crt, mozilla/XRamp_Global_CA_Root.crt, mozilla/certSIGN_ROOT_CA.crt, mozilla/ePKI_Root_Certification_Authority.crt, mozilla/thawte_Primary_Root_CA.crt, mozilla/thawte_Primary_Root_CA_-_G2.crt, mozilla/thawte_Primary_Root_CA_-_G3.crt, spi-inc.org/spi-cacert-2008.crt
+ca-certificates	ca-certificates/enable_crts	multiselect	mozilla/A-Trust-nQual-03.crt, mozilla/ACCVRAIZ1.crt, mozilla/ACEDICOM_Root.crt, mozilla/AC_Raíz_Certicámara_S.A..crt, mozilla/Actalis_Authentication_Root_CA.crt, mozilla/AddTrust_External_Root.crt, mozilla/AddTrust_Low-Value_Services_Root.crt, mozilla/AddTrust_Public_Services_Root.crt, mozilla/AddTrust_Qualified_Certificates_Root.crt, mozilla/AffirmTrust_Commercial.crt, mozilla/AffirmTrust_Networking.crt, mozilla/AffirmTrust_Premium.crt, mozilla/AffirmTrust_Premium_ECC.crt, mozilla/ApplicationCA_-_Japanese_Government.crt, mozilla/Atos_TrustedRoot_2011.crt, mozilla/Autoridad_de_Certificacion_Firmaprofesional_CIF_A62634068.crt, mozilla/Baltimore_CyberTrust_Root.crt, mozilla/Buypass_Class_2_CA_1.crt, mozilla/Buypass_Class_2_Root_CA.crt, mozilla/Buypass_Class_3_CA_1.crt, mozilla/Buypass_Class_3_Root_CA.crt, mozilla/CA_Disig.crt, mozilla/CA_Disig_Root_R1.crt, mozilla/CA_Disig_Root_R2.crt, mozilla/CFCA_EV_ROOT.crt, mozilla/CNNIC_ROOT.crt, mozilla/COMODO_Certification_Authority.crt, mozilla/COMODO_ECC_Certification_Authority.crt, mozilla/COMODO_RSA_Certification_Authority.crt, mozilla/Camerfirma_Chambers_of_Commerce_Root.crt, mozilla/Camerfirma_Global_Chambersign_Root.crt, mozilla/Certigna.crt, mozilla/Certinomis_-_Autorité_Racine.crt, mozilla/Certplus_Class_2_Primary_CA.crt, mozilla/Certum_Root_CA.crt, mozilla/Certum_Trusted_Network_CA.crt, mozilla/Chambers_of_Commerce_Root_-_2008.crt, mozilla/China_Internet_Network_Information_Center_EV_Certificates_Root.crt, mozilla/ComSign_CA.crt, mozilla/ComSign_Secured_CA.crt, mozilla/Comodo_AAA_Services_root.crt, mozilla/Comodo_Secure_Services_root.crt, mozilla/Comodo_Trusted_Services_root.crt, mozilla/Cybertrust_Global_Root.crt, mozilla/D-TRUST_Root_Class_3_CA_2_2009.crt, mozilla/D-TRUST_Root_Class_3_CA_2_EV_2009.crt, mozilla/DST_ACES_CA_X6.crt, mozilla/DST_Root_CA_X3.crt, mozilla/Deutsche_Telekom_Root_CA_2.crt, mozilla/DigiCert_Assured_ID_Root_CA.crt, mozilla/DigiCert_Assured_ID_Root_G2.crt, mozilla/DigiCert_Assured_ID_Root_G3.crt, mozilla/DigiCert_Global_Root_CA.crt, mozilla/DigiCert_Global_Root_G2.crt, mozilla/DigiCert_Global_Root_G3.crt, mozilla/DigiCert_High_Assurance_EV_Root_CA.crt, mozilla/DigiCert_Trusted_Root_G4.crt, mozilla/Digital_Signature_Trust_Co._Global_CA_1.crt, mozilla/Digital_Signature_Trust_Co._Global_CA_3.crt, mozilla/E-Tugra_Certification_Authority.crt, mozilla/EBG_Elektronik_Sertifika_Hizmet_Sağlayıcısı.crt, mozilla/EC-ACC.crt, mozilla/EE_Certification_Centre_Root_CA.crt, mozilla/Entrust.net_Premium_2048_Secure_Server_CA.crt, mozilla/Entrust_Root_Certification_Authority.crt, mozilla/Entrust_Root_Certification_Authority_-_EC1.crt, mozilla/Entrust_Root_Certification_Authority_-_G2.crt, mozilla/Equifax_Secure_CA.crt, mozilla/Equifax_Secure_Global_eBusiness_CA.crt, mozilla/Equifax_Secure_eBusiness_CA_1.crt, mozilla/GeoTrust_Global_CA.crt, mozilla/GeoTrust_Global_CA_2.crt, mozilla/GeoTrust_Primary_Certification_Authority.crt, mozilla/GeoTrust_Primary_Certification_Authority_-_G2.crt, mozilla/GeoTrust_Primary_Certification_Authority_-_G3.crt, mozilla/GeoTrust_Universal_CA.crt, mozilla/GeoTrust_Universal_CA_2.crt, mozilla/GlobalSign_ECC_Root_CA_-_R4.crt, mozilla/GlobalSign_ECC_Root_CA_-_R5.crt, mozilla/GlobalSign_Root_CA.crt, mozilla/GlobalSign_Root_CA_-_R2.crt, mozilla/GlobalSign_Root_CA_-_R3.crt, mozilla/Global_Chambersign_Root_-_2008.crt, mozilla/Go_Daddy_Class_2_CA.crt, mozilla/Go_Daddy_Root_Certificate_Authority_-_G2.crt, mozilla/Hellenic_Academic_and_Research_Institutions_RootCA_2011.crt, mozilla/Hongkong_Post_Root_CA_1.crt, mozilla/IGC_A.crt, mozilla/IdenTrust_Commercial_Root_CA_1.crt, mozilla/IdenTrust_Public_Sector_Root_CA_1.crt, mozilla/Izenpe.com.crt, mozilla/Juur-SK.crt, mozilla/Microsec_e-Szigno_Root_CA.crt, mozilla/Microsec_e-Szigno_Root_CA_2009.crt, mozilla/NetLock_Arany_=Class_Gold=_Főtanúsítvány.crt, mozilla/NetLock_Business_=Class_B=_Root.crt, mozilla/NetLock_Express_=Class_C=_Root.crt, mozilla/NetLock_Notary_=Class_A=_Root.crt, mozilla/NetLock_Qualified_=Class_QA=_Root.crt, mozilla/Network_Solutions_Certificate_Authority.crt, mozilla/OISTE_WISeKey_Global_Root_GA_CA.crt, mozilla/PSCProcert.crt, mozilla/QuoVadis_Root_CA.crt, mozilla/QuoVadis_Root_CA_1_G3.crt, mozilla/QuoVadis_Root_CA_2.crt, mozilla/QuoVadis_Root_CA_2_G3.crt, mozilla/QuoVadis_Root_CA_3.crt, mozilla/QuoVadis_Root_CA_3_G3.crt, mozilla/RSA_Security_2048_v3.crt, mozilla/Root_CA_Generalitat_Valenciana.crt, mozilla/S-TRUST_Authentication_and_Encryption_Root_CA_2005_PN.crt, mozilla/S-TRUST_Universal_Root_CA.crt, mozilla/SG_TRUST_SERVICES_RACINE.crt, mozilla/SecureSign_RootCA11.crt, mozilla/SecureTrust_CA.crt, mozilla/Secure_Global_CA.crt, mozilla/Security_Communication_EV_RootCA1.crt, mozilla/Security_Communication_RootCA2.crt, mozilla/Security_Communication_Root_CA.crt, mozilla/Sonera_Class_1_Root_CA.crt, mozilla/Sonera_Class_2_Root_CA.crt, mozilla/Staat_der_Nederlanden_EV_Root_CA.crt, mozilla/Staat_der_Nederlanden_Root_CA.crt, mozilla/Staat_der_Nederlanden_Root_CA_-_G2.crt, mozilla/Staat_der_Nederlanden_Root_CA_-_G3.crt, mozilla/Starfield_Class_2_CA.crt, mozilla/Starfield_Root_Certificate_Authority_-_G2.crt, mozilla/Starfield_Services_Root_Certificate_Authority_-_G2.crt, mozilla/StartCom_Certification_Authority.crt, mozilla/StartCom_Certification_Authority_2.crt, mozilla/StartCom_Certification_Authority_G2.crt, mozilla/SwissSign_Gold_CA_-_G2.crt, mozilla/SwissSign_Platinum_CA_-_G2.crt, mozilla/SwissSign_Silver_CA_-_G2.crt, mozilla/Swisscom_Root_CA_1.crt, mozilla/Swisscom_Root_CA_2.crt, mozilla/Swisscom_Root_EV_CA_2.crt, mozilla/T-TeleSec_GlobalRoot_Class_2.crt, mozilla/T-TeleSec_GlobalRoot_Class_3.crt, mozilla/TC_TrustCenter_Class_2_CA_II.crt, mozilla/TC_TrustCenter_Class_3_CA_II.crt, mozilla/TC_TrustCenter_Universal_CA_I.crt, mozilla/TURKTRUST_Certificate_Services_Provider_Root_1.crt, mozilla/TURKTRUST_Certificate_Services_Provider_Root_2.crt, mozilla/TURKTRUST_Certificate_Services_Provider_Root_2007.crt, mozilla/TWCA_Global_Root_CA.crt, mozilla/TWCA_Root_Certification_Authority.crt, mozilla/Taiwan_GRCA.crt, mozilla/TeliaSonera_Root_CA_v1.crt, mozilla/Trustis_FPS_Root_CA.crt, mozilla/TÜBİTAK_UEKAE_Kök_Sertifika_Hizmet_Sağlayıcısı_-_Sürüm_3.crt, mozilla/USERTrust_ECC_Certification_Authority.crt, mozilla/USERTrust_RSA_Certification_Authority.crt, mozilla/UTN_DATACorp_SGC_Root_CA.crt, mozilla/UTN_USERFirst_Email_Root_CA.crt, mozilla/UTN_USERFirst_Hardware_Root_CA.crt, mozilla/VeriSign_Class_3_Public_Primary_Certification_Authority_-_G4.crt, mozilla/VeriSign_Class_3_Public_Primary_Certification_Authority_-_G5.crt, mozilla/VeriSign_Universal_Root_Certification_Authority.crt, mozilla/Verisign_Class_1_Public_Primary_Certification_Authority.crt, mozilla/Verisign_Class_1_Public_Primary_Certification_Authority_-_G2.crt, mozilla/Verisign_Class_1_Public_Primary_Certification_Authority_-_G3.crt, mozilla/Verisign_Class_2_Public_Primary_Certification_Authority_-_G2.crt, mozilla/Verisign_Class_2_Public_Primary_Certification_Authority_-_G3.crt, mozilla/Verisign_Class_3_Public_Primary_Certification_Authority.crt, mozilla/Verisign_Class_3_Public_Primary_Certification_Authority_-_G2.crt, mozilla/Verisign_Class_3_Public_Primary_Certification_Authority_-_G3.crt, mozilla/Verisign_Class_3_Public_Primary_Certification_Authority_2.crt, mozilla/Verisign_Class_4_Public_Primary_Certification_Authority_-_G3.crt, mozilla/Visa_eCommerce_Root.crt, mozilla/WellsSecure_Public_Root_Certificate_Authority.crt, mozilla/WoSign.crt, mozilla/WoSign_China.crt, mozilla/XRamp_Global_CA_Root.crt, mozilla/certSIGN_ROOT_CA.crt, mozilla/ePKI_Root_Certification_Authority.crt, mozilla/thawte_Primary_Root_CA.crt, mozilla/thawte_Primary_Root_CA_-_G2.crt, mozilla/thawte_Primary_Root_CA_-_G3.crt, spi-inc.org/spi-cacert-2008.crt
+# Choose software to install:
+# Choices: 
+tasksel	tasksel/tasks	multiselect	
+# Locality name for the X.509 certificate request:
+strongswan-starter	strongswan/x509_locality_name	string	
+# System mail name:
+exim4-config	exim4/mailname	string	netkit-vm
+# Do you want system-wide readable home directories?
+adduser	adduser/homedir-permission	boolean	true
+# Invalid Shorewall configuration detected
+shorewall	shorewall/invalid_config	error	
+# Domains to relay mail for:
+exim4-config	exim4/dc_relay_domains	string	
+# What do you want to do about modified configuration file ?
+# Choices: install the package maintainer's version, keep the local version currently installed, show the differences between the versions, show a side-by-side difference between the versions, show a 3-way difference between available versions, do a 3-way merge between available versions (experimental), start a new shell to examine the situation
+ucf	ucf/changeprompt_threeway	select	keep_current
+# Should Snort disable promiscuous mode on the interface?
+snort	snort/disable_promiscuous	boolean	false
+# Deprecated configuration file
+snort-common	snort/deprecated_file	note	
+# Machines to relay mail for:
+exim4-config	exim4/dc_relay_nets	string	
+# IP address or host name of the outgoing smarthost:
+exim4-config	exim4/dc_smarthost	string	
+# Do you want to change the GECOS of user ?
+base-passwd	base-passwd/user-change-gecos	boolean	true
+# Should resolv.conf settings be overridden?
+bind9	bind9/run-resolvconf	boolean	false
+# Disable SSH password authentication for root?
+openssh-server	openssh-server/permit-root-login	boolean	false
+# Reconfigure exim4-config instead of this package
+exim4-base	exim4-base/drec	error	
+# Split configuration into small files?
+exim4-config	exim4/use_split_config	boolean	false
+# Do you want to add the user ?
+base-passwd	base-passwd/user-add	boolean	true
+# Create the TUN/TAP device?
+openvpn	openvpn/create_tun	boolean	false
+# Do you want to move the user ?
+base-passwd	base-passwd/user-move	boolean	true
+# Time zone:
+# Choices: Amsterdam, Andorra, Athens, Belfast, Belgrade, Berlin, Bratislava, Brussels, Bucharest, Budapest, Busingen, Chisinau, Copenhagen, Dublin, Gibraltar, Guernsey, Helsinki, Isle_of_Man, Istanbul, Jersey, Kaliningrad, Kiev, Lisbon, Ljubljana, London, Luxembourg, Madrid, Malta, Mariehamn, Minsk, Monaco, Moscow, Nicosia, Oslo, Paris, Podgorica, Prague, Riga, Rome, Samara, San_Marino, Sarajevo, Simferopol, Skopje, Sofia, Stockholm, Tallinn, Tirane, Tiraspol, Uzhgorod, Vaduz, Vatican, Vienna, Vilnius, Volgograd, Warsaw, Zagreb, Zaporozhye, Zurich
+tzdata	tzdata/Zones/Europe	select	
+# Ignore questions with a priority less than:
+# Choices: critical, high, medium, low
+debconf	debconf/priority	select	high
+# Restart Shorewall?
+shorewall	shorewall/major_release	boolean	
+# Disable inetd entries?
+update-inetd	update-inetd/ask-disable-entries	boolean	false
+# No PAM profiles have been selected.
+libpam-runtime	libpam-runtime/no_profiles_chosen	error	
+# State or province name for the X.509 certificate request:
+strongswan-starter	strongswan/x509_state_name	string	
+# Services to restart for GNU libc library upgrade:
+libc6	glibc/restart-services	string	
+libc6:amd64	glibc/restart-services	string	
+# Time zone:
+# Choices: Antananarivo, Chagos, Christmas, Cocos, Comoro, Kerguelen, Mahe, Maldives, Mauritius, Mayotte, Reunion
+tzdata	tzdata/Zones/Indian	select	
+# Other destinations for which mail is accepted:
+exim4-config	exim4/dc_other_hostnames	string	netkit-vm
+# IP address where PowerDNS should listen on:
+pdns-server	pdns-server/localaddress	string	
+# Use an X.509 certificate for this host?
+strongswan-starter	strongswan/install_x509_certificate	boolean	false
+# Time zone:
+# Choices: AST4, AST4ADT, CST6, CST6CDT, EST5, EST5EDT, HST10, MST7, MST7MDT, PST8, PST8PDT, YST9, YST9YDT
+tzdata	tzdata/Zones/SystemV	select	
+# Please enter which length the created RSA key should have:
+strongswan-starter	strongswan/rsa_key_length	string	2048
+# This can be preseeded to override the default desktop.
+# Choices: gnome, kde, xfce, lxde, cinnamon, mate
+tasksel	tasksel/desktop	multiselect	
+# Interface(s) which Snort should listen on:
+snort	snort/interface	string	eth0
+# Do you want to remove the user ?
+base-passwd	base-passwd/user-remove	boolean	true
+# Should daily summaries be sent by e-mail?
+snort	snort/send_stats	boolean	true
+# No automatic restart for Shorewall6
+shorewall6	shorewall6/dont_restart	note	
+# Do you want to change the GID of group ?
+base-passwd	base-passwd/group-change-gid	boolean	true
+# Reboot needed after this upgrade
+udev	udev/reboot_needed	error	
+# Do you want to change the UID of user ?
+base-passwd	base-passwd/user-change-uid	boolean	true
+# Time zone:
+# Choices: GMT, GMT+0, GMT+1, GMT+10, GMT+11, GMT+12, GMT+2, GMT+3, GMT+4, GMT+5, GMT+6, GMT+7, GMT+8, GMT+9, GMT-0, GMT-1, GMT-10, GMT-11, GMT-12, GMT-13, GMT-14, GMT-2, GMT-3, GMT-4, GMT-5, GMT-6, GMT-7, GMT-8, GMT-9, GMT0, Greenwich, UCT, UTC, Universal, Zulu
+tzdata	tzdata/Zones/Etc	select	UTC
+# Do you want to add the group ?
+base-passwd	base-passwd/group-add	boolean	true
+# Configuration error
+snort-common	snort/config_error	error	
+# Alternative name(s):
+ssl-cert	make-ssl-cert/altname	string	
+# Time zone:
+# Choices: Apia, Auckland, Bougainville, Chatham, Chuuk, Easter, Efate, Enderbury, Fakaofo, Fiji, Funafuti, Galapagos, Gambier, Guadalcanal, Guam, Honolulu, Johnston, Kiritimati, Kosrae, Kwajalein, Majuro, Marquesas, Midway, Nauru, Niue, Norfolk, Noumea, Pago_Pago, Palau, Pitcairn, Pohnpei, Ponape, Port_Moresby, Rarotonga, Saipan, Samoa, Tahiti, Tarawa, Tongatapu, Truk, Wake, Wallis, Yap
+tzdata	tzdata/Zones/Pacific	select	
+# File name of your PEM format X.509 certificate:
+strongswan-starter	strongswan/existing_x509_certificate_filename	string	
+# Time zone:
+# Choices: Alaska, Aleutian, Arizona, Central, Eastern, Hawaii, Starke County (Indiana), Michigan, Mountain, Pacific Ocean, Pacific-New, Samoa
+tzdata	tzdata/Zones/US	select	
+# Snort restart required
+snort	snort/please_restart_manually	note	
+# No automatic restart for Shorewall
+shorewall	shorewall/dont_restart	note	
+# xscreensaver and xlockmore must be restarted before upgrading
+libpam-modules	libpam-modules/disable-screensaver	error	
+# Enable subpixel rendering for screen:
+# Choices: Automatic, Always, Never
+fontconfig-config	fontconfig/subpixel_rendering	select	Automatic
+# Old runlevel management superseded
+strongswan-starter	strongswan/runlevel_changes	note	
+# Configure smb.conf automatically?
+samba-common	samba-common/do_debconf	boolean	true
+# Remove inetd entries?
+update-inetd	update-inetd/ask-remove-entries	boolean	false
+# Visible domain name for local users:
+exim4-config	exim4/dc_readhost	string	
+# Do you want to change the shell of user ?
+base-passwd	base-passwd/user-change-shell	boolean	true
+# Proceed with the udev upgrade despite the kernel incompatibility?
+udev	udev/new_kernel_needed	boolean	false
+# Time zone:
+# Choices: Casey, Davis, DumontDUrville, Macquarie, Mawson, McMurdo, Palmer, Rothera, Syowa, Troll, Vostok
+tzdata	tzdata/Zones/Antarctica	select	
+# Restart Shorewall6?
+shorewall6	shorewall6/major_release	boolean	
+# General type of mail configuration:
+# Choices: internet site; mail is sent and received directly using SMTP, mail sent by smarthost; received via SMTP or fetchmail, mail sent by smarthost; no local mail, local delivery only; not on a network, no configuration at this time
+exim4-config	exim4/dc_eximconfig_configtype	select	local delivery only; not on a network
+# Display manager must be restarted manually
+libpam0g:amd64	libpam0g/xdm-needs-restart	error	
+# List of subnets that are allowed to recurse:
+pdns-server	pdns-server/allowrecursion	string	127.0.0.1
+# Do you want to remove the group ?
+base-passwd	base-passwd/group-remove	boolean	true
+# Do you want to change the home directory of user ?
+base-passwd	base-passwd/user-change-home	boolean	true
+# Modify smb.conf to use WINS settings from DHCP?
+samba-common	samba-common/dhcp	boolean	false
+# Other startup options for named:
+bind9	bind9/different-configuration-file	string	
+# IP-addresses to listen on for incoming SMTP connections:
+exim4-config	exim4/dc_local_interfaces	string	127.0.0.1 ; ::1
+# Ignore multiple entries and continue without changes?
+update-inetd	update-inetd/ask-several-entries	boolean	true
+# General type of pdnsd configuration:
+# Choices: Use resolvconf, Use root servers, Manual
+pdnsd	pdnsd/conf	select	Manual
+# Line by line differences between versions
+ucf	ucf/show_diff	note	
+# Minimum occurrences before alerts are reported:
+snort	snort/stats_treshold	string	1
+# Do you want to move the group ?
+base-passwd	base-passwd/group-move	boolean	true
+# Time zone:
+# Choices: Azores, Bermuda, Canary, Cape Verde, Faroe, Jan Mayen, Madeira, Reykjavik, South Georgia, St. Helena, Stanley
+tzdata	tzdata/Zones/Atlantic	select	
+# Should non-superusers be able to capture packets?
+wireshark-common	wireshark-common/install-setuid	boolean	false
+# Use dash as the default system shell (/bin/sh)?
+dash	dash/sh	boolean	true
+# Start strongSwan's charon daemon?
+strongswan-starter	strongswan/charon	boolean	true
+# Leave existing entry and continue without changes?
+update-inetd	update-inetd/ask-entry-present	boolean	true
+# Recipient of daily statistics mails:
+snort	snort/stats_rcpt	string	root
+# Root and postmaster mail recipient:
+exim4-config	exim4/dc_postmaster	string	
+# Enable bitmapped fonts by default?
+fontconfig-config	fontconfig/enable_bitmaps	boolean	false
+# Obsolete configuration file
+snort	snort/config_parameters	error	
+# System's default paper size:
+# Choices: letter, a4, note, legal, executive, halfletter, halfexecutive, 11x17, statement, folio, quarto, 10x14, ledger, tabloid, a0, a1, a2, a3, a5, a6, a7, a8, a9, a10, b0, b1, b2, b3, b4, b5, c5, DL, Comm10, Monarch, archE, archD, archC, archB, archA, flsa, flse, csheet, dsheet, esheet
+libpaper1	libpaper/defaultpaper	select	a4
+libpaper1:amd64	libpaper/defaultpaper	select	a4
+# File name of your PEM format X.509 RootCA:
+strongswan-starter	strongswan/existing_x509_rootca_filename	string	
+# Failure restarting some services for OpenSSL upgrade
+libssl1.0.0:amd64	libssl1.0.0/restart-failed	error	
+# Snort start method:
+# Choices: boot, dialup, manual
+snort	snort/startup	select	boot
+# Restart services during package upgrades without asking?
+libc6	libraries/restart-without-asking	boolean	false
+libc6:amd64	libraries/restart-without-asking	boolean	false
+libpam0g:amd64	libraries/restart-without-asking	boolean	false
+# Time zone:
+# Choices: Adelaide, Brisbane, Broken Hill, Canberra, Currie, Darwin, Eucla, Hobart, Lindeman, Lord Howe, Melbourne, Perth, Sydney, Yancowinna
+tzdata	tzdata/Zones/Australia	select	
+# Workgroup/Domain Name:
+samba-common	samba-common/workgroup	string	WORKGROUP
+# What do you want to do about modified configuration file ?
+# Choices: install the package maintainer's version, keep the local version currently installed, show the differences between the versions, show a side-by-side difference between the versions, start a new shell to examine the situation
+ucf	ucf/changeprompt	select	keep_current
+# Invalid interface
+snort	snort/invalid_interface	error	
+# Locales to be generated:
+# Choices: All locales, aa_DJ ISO-8859-1, aa_DJ.UTF-8 UTF-8, aa_ER UTF-8, aa_ER@saaho UTF-8, aa_ET UTF-8, af_ZA ISO-8859-1, af_ZA.UTF-8 UTF-8, ak_GH UTF-8, am_ET UTF-8, an_ES ISO-8859-15, an_ES.UTF-8 UTF-8, anp_IN UTF-8, ar_AE ISO-8859-6, ar_AE.UTF-8 UTF-8, ar_BH ISO-8859-6, ar_BH.UTF-8 UTF-8, ar_DZ ISO-8859-6, ar_DZ.UTF-8 UTF-8, ar_EG ISO-8859-6, ar_EG.UTF-8 UTF-8, ar_IN UTF-8, ar_IQ ISO-8859-6, ar_IQ.UTF-8 UTF-8, ar_JO ISO-8859-6, ar_JO.UTF-8 UTF-8, ar_KW ISO-8859-6, ar_KW.UTF-8 UTF-8, ar_LB ISO-8859-6, ar_LB.UTF-8 UTF-8, ar_LY ISO-8859-6, ar_LY.UTF-8 UTF-8, ar_MA ISO-8859-6, ar_MA.UTF-8 UTF-8, ar_OM ISO-8859-6, ar_OM.UTF-8 UTF-8, ar_QA ISO-8859-6, ar_QA.UTF-8 UTF-8, ar_SA ISO-8859-6, ar_SA.UTF-8 UTF-8, ar_SD ISO-8859-6, ar_SD.UTF-8 UTF-8, ar_SS UTF-8, ar_SY ISO-8859-6, ar_SY.UTF-8 UTF-8, ar_TN ISO-8859-6, ar_TN.UTF-8 UTF-8, ar_YE ISO-8859-6, ar_YE.UTF-8 UTF-8, as_IN UTF-8, ast_ES ISO-8859-15, ast_ES.UTF-8 UTF-8, ayc_PE UTF-8, az_AZ UTF-8, be_BY CP1251, be_BY.UTF-8 UTF-8, be_BY@latin UTF-8, bem_ZM UTF-8, ber_DZ UTF-8, ber_MA UTF-8, bg_BG CP1251, bg_BG.UTF-8 UTF-8, bho_IN UTF-8, bn_BD UTF-8, bn_IN UTF-8, bo_CN UTF-8, bo_IN UTF-8, br_FR ISO-8859-1, br_FR.UTF-8 UTF-8, br_FR@euro ISO-8859-15, brx_IN UTF-8, bs_BA ISO-8859-2, bs_BA.UTF-8 UTF-8, byn_ER UTF-8, ca_AD ISO-8859-15, ca_AD.UTF-8 UTF-8, ca_ES ISO-8859-1, ca_ES.UTF-8 UTF-8, ca_ES.UTF-8@valencia UTF-8, ca_ES@euro ISO-8859-15, ca_ES@valencia ISO-8859-15, ca_FR ISO-8859-15, ca_FR.UTF-8 UTF-8, ca_IT ISO-8859-15, ca_IT.UTF-8 UTF-8, cmn_TW UTF-8, crh_UA UTF-8, cs_CZ ISO-8859-2, cs_CZ.UTF-8 UTF-8, csb_PL UTF-8, cv_RU UTF-8, cy_GB ISO-8859-14, cy_GB.UTF-8 UTF-8, da_DK ISO-8859-1, da_DK.UTF-8 UTF-8, de_AT ISO-8859-1, de_AT.UTF-8 UTF-8, de_AT@euro ISO-8859-15, de_BE ISO-8859-1, de_BE.UTF-8 UTF-8, de_BE@euro ISO-8859-15, de_CH ISO-8859-1, de_CH.UTF-8 UTF-8, de_DE ISO-8859-1, de_DE.UTF-8 UTF-8, de_DE@euro ISO-8859-15, de_LI.UTF-8 UTF-8, de_LU ISO-8859-1, de_LU.UTF-8 UTF-8, de_LU@euro ISO-8859-15, doi_IN UTF-8, dv_MV UTF-8, dz_BT UTF-8, el_CY ISO-8859-7, el_CY.UTF-8 UTF-8, el_GR ISO-8859-7, el_GR.UTF-8 UTF-8, en_AG UTF-8, en_AU ISO-8859-1, en_AU.UTF-8 UTF-8, en_BW ISO-8859-1, en_BW.UTF-8 UTF-8, en_CA ISO-8859-1, en_CA.UTF-8 UTF-8, en_DK ISO-8859-1, en_DK.ISO-8859-15 ISO-8859-15, en_DK.UTF-8 UTF-8, en_GB ISO-8859-1, en_GB.ISO-8859-15 ISO-8859-15, en_GB.UTF-8 UTF-8, en_HK ISO-8859-1, en_HK.UTF-8 UTF-8, en_IE ISO-8859-1, en_IE.UTF-8 UTF-8, en_IE@euro ISO-8859-15, en_IN UTF-8, en_NG UTF-8, en_NZ ISO-8859-1, en_NZ.UTF-8 UTF-8, en_PH ISO-8859-1, en_PH.UTF-8 UTF-8, en_SG ISO-8859-1, en_SG.UTF-8 UTF-8, en_US ISO-8859-1, en_US.ISO-8859-15 ISO-8859-15, en_US.UTF-8 UTF-8, en_ZA ISO-8859-1, en_ZA.UTF-8 UTF-8, en_ZM UTF-8, en_ZW ISO-8859-1, en_ZW.UTF-8 UTF-8, eo ISO-8859-3, eo.UTF-8 UTF-8, es_AR ISO-8859-1, es_AR.UTF-8 UTF-8, es_BO ISO-8859-1, es_BO.UTF-8 UTF-8, es_CL ISO-8859-1, es_CL.UTF-8 UTF-8, es_CO ISO-8859-1, es_CO.UTF-8 UTF-8, es_CR ISO-8859-1, es_CR.UTF-8 UTF-8, es_CU UTF-8, es_DO ISO-8859-1, es_DO.UTF-8 UTF-8, es_EC ISO-8859-1, es_EC.UTF-8 UTF-8, es_ES ISO-8859-1, es_ES.UTF-8 UTF-8, es_ES@euro ISO-8859-15, es_GT ISO-8859-1, es_GT.UTF-8 UTF-8, es_HN ISO-8859-1, es_HN.UTF-8 UTF-8, es_MX ISO-8859-1, es_MX.UTF-8 UTF-8, es_NI ISO-8859-1, es_NI.UTF-8 UTF-8, es_PA ISO-8859-1, es_PA.UTF-8 UTF-8, es_PE ISO-8859-1, es_PE.UTF-8 UTF-8, es_PR ISO-8859-1, es_PR.UTF-8 UTF-8, es_PY ISO-8859-1, es_PY.UTF-8 UTF-8, es_SV ISO-8859-1, es_SV.UTF-8 UTF-8, es_US ISO-8859-1, es_US.UTF-8 UTF-8, es_UY ISO-8859-1, es_UY.UTF-8 UTF-8, es_VE ISO-8859-1, es_VE.UTF-8 UTF-8, et_EE ISO-8859-1, et_EE.ISO-8859-15 ISO-8859-15, et_EE.UTF-8 UTF-8, eu_ES ISO-8859-1, eu_ES.UTF-8 UTF-8, eu_ES@euro ISO-8859-15, eu_FR ISO-8859-1, eu_FR.UTF-8 UTF-8, eu_FR@euro ISO-8859-15, fa_IR UTF-8, ff_SN UTF-8, fi_FI ISO-8859-1, fi_FI.UTF-8 UTF-8, fi_FI@euro ISO-8859-15, fil_PH UTF-8, fo_FO ISO-8859-1, fo_FO.UTF-8 UTF-8, fr_BE ISO-8859-1, fr_BE.UTF-8 UTF-8, fr_BE@euro ISO-8859-15, fr_CA ISO-8859-1, fr_CA.UTF-8 UTF-8, fr_CH ISO-8859-1, fr_CH.UTF-8 UTF-8, fr_FR ISO-8859-1, fr_FR.UTF-8 UTF-8, fr_FR@euro ISO-8859-15, fr_LU ISO-8859-1, fr_LU.UTF-8 UTF-8, fr_LU@euro ISO-8859-15, fur_IT UTF-8, fy_DE UTF-8, fy_NL UTF-8, ga_IE ISO-8859-1, ga_IE.UTF-8 UTF-8, ga_IE@euro ISO-8859-15, gd_GB ISO-8859-15, gd_GB.UTF-8 UTF-8, gez_ER UTF-8, gez_ER@abegede UTF-8, gez_ET UTF-8, gez_ET@abegede UTF-8, gl_ES ISO-8859-1, gl_ES.UTF-8 UTF-8, gl_ES@euro ISO-8859-15, gu_IN UTF-8, gv_GB ISO-8859-1, gv_GB.UTF-8 UTF-8, ha_NG UTF-8, hak_TW UTF-8, he_IL ISO-8859-8, he_IL.UTF-8 UTF-8, hi_IN UTF-8, hne_IN UTF-8, hr_HR ISO-8859-2, hr_HR.UTF-8 UTF-8, hsb_DE ISO-8859-2, hsb_DE.UTF-8 UTF-8, ht_HT UTF-8, hu_HU ISO-8859-2, hu_HU.UTF-8 UTF-8, hy_AM UTF-8, hy_AM.ARMSCII-8 ARMSCII-8, ia_FR UTF-8, id_ID ISO-8859-1, id_ID.UTF-8 UTF-8, ig_NG UTF-8, ik_CA UTF-8, is_IS ISO-8859-1, is_IS.UTF-8 UTF-8, it_CH ISO-8859-1, it_CH.UTF-8 UTF-8, it_IT ISO-8859-1, it_IT.UTF-8 UTF-8, it_IT@euro ISO-8859-15, iu_CA UTF-8, iw_IL ISO-8859-8, iw_IL.UTF-8 UTF-8, ja_JP.EUC-JP EUC-JP, ja_JP.UTF-8 UTF-8, ka_GE GEORGIAN-PS, ka_GE.UTF-8 UTF-8, kk_KZ PT154, kk_KZ RK1048, kk_KZ.UTF-8 UTF-8, kl_GL ISO-8859-1, kl_GL.UTF-8 UTF-8, km_KH UTF-8, kn_IN UTF-8, ko_KR.EUC-KR EUC-KR, ko_KR.UTF-8 UTF-8, kok_IN UTF-8, ks_IN UTF-8, ks_IN@devanagari UTF-8, ku_TR ISO-8859-9, ku_TR.UTF-8 UTF-8, kw_GB ISO-8859-1, kw_GB.UTF-8 UTF-8, ky_KG UTF-8, lb_LU UTF-8, lg_UG ISO-8859-10, lg_UG.UTF-8 UTF-8, li_BE UTF-8, li_NL UTF-8, lij_IT UTF-8, lo_LA UTF-8, lt_LT ISO-8859-13, lt_LT.UTF-8 UTF-8, lv_LV ISO-8859-13, lv_LV.UTF-8 UTF-8, lzh_TW UTF-8, mag_IN UTF-8, mai_IN UTF-8, mg_MG ISO-8859-15, mg_MG.UTF-8 UTF-8, mhr_RU UTF-8, mi_NZ ISO-8859-13, mi_NZ.UTF-8 UTF-8, mk_MK ISO-8859-5, mk_MK.UTF-8 UTF-8, ml_IN UTF-8, mn_MN UTF-8, mni_IN UTF-8, mr_IN UTF-8, ms_MY ISO-8859-1, ms_MY.UTF-8 UTF-8, mt_MT ISO-8859-3, mt_MT.UTF-8 UTF-8, my_MM UTF-8, nan_TW UTF-8, nan_TW@latin UTF-8, nb_NO ISO-8859-1, nb_NO.UTF-8 UTF-8, nds_DE UTF-8, nds_NL UTF-8, ne_NP UTF-8, nhn_MX UTF-8, niu_NU UTF-8, niu_NZ UTF-8, nl_AW UTF-8, nl_BE ISO-8859-1, nl_BE.UTF-8 UTF-8, nl_BE@euro ISO-8859-15, nl_NL ISO-8859-1, nl_NL.UTF-8 UTF-8, nl_NL@euro ISO-8859-15, nn_NO ISO-8859-1, nn_NO.UTF-8 UTF-8, nr_ZA UTF-8, nso_ZA UTF-8, oc_FR ISO-8859-1, oc_FR.UTF-8 UTF-8, om_ET UTF-8, om_KE ISO-8859-1, om_KE.UTF-8 UTF-8, or_IN UTF-8, os_RU UTF-8, pa_IN UTF-8, pa_PK UTF-8, pap_AN UTF-8, pap_AW UTF-8, pap_CW UTF-8, pl_PL ISO-8859-2, pl_PL.UTF-8 UTF-8, ps_AF UTF-8, pt_BR ISO-8859-1, pt_BR.UTF-8 UTF-8, pt_PT ISO-8859-1, pt_PT.UTF-8 UTF-8, pt_PT@euro ISO-8859-15, quz_PE UTF-8, ro_RO ISO-8859-2, ro_RO.UTF-8 UTF-8, ru_RU ISO-8859-5, ru_RU.CP1251 CP1251, ru_RU.KOI8-R KOI8-R, ru_RU.UTF-8 UTF-8, ru_UA KOI8-U, ru_UA.UTF-8 UTF-8, rw_RW UTF-8, sa_IN UTF-8, sat_IN UTF-8, sc_IT UTF-8, sd_IN UTF-8, sd_IN@devanagari UTF-8, se_NO UTF-8, shs_CA UTF-8, si_LK UTF-8, sid_ET UTF-8, sk_SK ISO-8859-2, sk_SK.UTF-8 UTF-8, sl_SI ISO-8859-2, sl_SI.UTF-8 UTF-8, so_DJ ISO-8859-1, so_DJ.UTF-8 UTF-8, so_ET UTF-8, so_KE ISO-8859-1, so_KE.UTF-8 UTF-8, so_SO ISO-8859-1, so_SO.UTF-8 UTF-8, sq_AL ISO-8859-1, sq_AL.UTF-8 UTF-8, sq_MK UTF-8, sr_ME UTF-8, sr_RS UTF-8, sr_RS@latin UTF-8, ss_ZA UTF-8, st_ZA ISO-8859-1, st_ZA.UTF-8 UTF-8, sv_FI ISO-8859-1, sv_FI.UTF-8 UTF-8, sv_FI@euro ISO-8859-15, sv_SE ISO-8859-1, sv_SE.ISO-8859-15 ISO-8859-15, sv_SE.UTF-8 UTF-8, sw_KE UTF-8, sw_TZ UTF-8, szl_PL UTF-8, ta_IN UTF-8, ta_LK UTF-8, te_IN UTF-8, tg_TJ KOI8-T, tg_TJ.UTF-8 UTF-8, th_TH TIS-620, th_TH.UTF-8 UTF-8, the_NP UTF-8, ti_ER UTF-8, ti_ET UTF-8, tig_ER UTF-8, tk_TM UTF-8, tl_PH ISO-8859-1, tl_PH.UTF-8 UTF-8, tn_ZA UTF-8, tr_CY ISO-8859-9, tr_CY.UTF-8 UTF-8, tr_TR ISO-8859-9, tr_TR.UTF-8 UTF-8, ts_ZA UTF-8, tt_RU UTF-8, tt_RU@iqtelif UTF-8, ug_CN UTF-8, uk_UA KOI8-U, uk_UA.UTF-8 UTF-8, unm_US UTF-8, ur_IN UTF-8, ur_PK UTF-8, uz_UZ ISO-8859-1, uz_UZ.UTF-8 UTF-8, uz_UZ@cyrillic UTF-8, ve_ZA UTF-8, vi_VN UTF-8, wa_BE ISO-8859-1, wa_BE.UTF-8 UTF-8, wa_BE@euro ISO-8859-15, wae_CH UTF-8, wal_ET UTF-8, wo_SN UTF-8, xh_ZA ISO-8859-1, xh_ZA.UTF-8 UTF-8, yi_US CP1255, yi_US.UTF-8 UTF-8, yo_NG UTF-8, yue_HK UTF-8, zh_CN GB2312, zh_CN.GB18030 GB18030, zh_CN.GBK GBK, zh_CN.UTF-8 UTF-8, zh_HK BIG5-HKSCS, zh_HK.UTF-8 UTF-8, zh_SG GB2312, zh_SG.GBK GBK, zh_SG.UTF-8 UTF-8, zh_TW BIG5, zh_TW.EUC-TW EUC-TW, zh_TW.UTF-8 UTF-8, zu_ZA ISO-8859-1, zu_ZA.UTF-8 UTF-8
+locales	locales/locales_to_be_generated	multiselect	
+# The running kernel has incompatible options enabled
+udev	udev/sysfs_deprecated_incompatibility	error	
+# Failure restarting some services for PAM upgrade
+libpam0g:amd64	libpam0g/restart-failed	error	
+# Hide local mail name in outgoing mail?
+exim4-config	exim4/hide_mailname	boolean	
+# Enable opportunistic encryption?
+strongswan-starter	strongswan/enable-oe	boolean	false
+# Reconfigure exim4-config instead of this package
+exim4	exim4/drec	error	
+# Remove undelivered messages in spool directory?
+exim4-base	exim4/purge_spool	boolean	false
+# Trust new certificates from certificate authorities?
+# Choices: yes, no, ask
+ca-certificates	ca-certificates/trust_new_crts	select	yes
+# Delivery method for local mail:
+# Choices: mbox format in /var/mail/, Maildir format in home directory
+exim4-config	exim4/dc_localdelivery	select	mbox format in /var/mail/
+# for internal use; can be preseeded
+man-db	man-db/auto-update	boolean	true
+# Default locale for the system environment:
+# Choices: None, C.UTF-8, 
+locales	locales/default_environment_locale	select	None
+# Failure restarting some services for GNU libc upgrade
+libc6	glibc/restart-failed	error	
+libc6:amd64	glibc/restart-failed	error	
+# Make /etc/mrtg.cfg owned by and readable only by root?
+mrtg	mrtg/conf_mods	boolean	true
+# Address range for the local network:
+snort	snort/address_range	string	192.168.0.0/16
+# Font tuning method for screen (system default):
+# Choices: Native, Autohinter, None
+fontconfig-config	fontconfig/hinting_type	select	Native
+# Do you want to upgrade glibc now?
+libc6	glibc/upgrade	boolean	true
+libc6:amd64	glibc/upgrade	boolean	true
+# Should man and mandb be installed 'setuid man'?
+man-db	man-db/install-setuid	boolean	false
+# Methods for using a X.509 certificate to authenticate this host:
+# Choices: create, import
+strongswan-starter	strongswan/how_to_get_x509_certificate	select	create
+# xscreensaver and xlockmore must be restarted before upgrading
+libc6	glibc/disable-screensaver	error	
+libc6:amd64	glibc/disable-screensaver	error	
+# Interface to use:
+# Choices: Dialog, Readline, Gnome, Kde, Editor, Noninteractive
+debconf	debconf/frontend	select	Dialog
+# New certificates to activate:
+# Choices: 
+ca-certificates	ca-certificates/new_crts	multiselect	
+# File name of your PEM format X.509 private key:
+strongswan-starter	strongswan/existing_x509_key_filename	string	
+# Email address for the X.509 certificate request:
+strongswan-starter	strongswan/x509_email_address	string	
+# Local SSL certificates must be replaced
+ssl-cert	make-ssl-cert/vulnerable_prng	note	
+# Add saned user to the scanner group?
+sane-utils	sane-utils/saned_scanner_group	boolean	true
+# Restart strongSwan now?
+strongswan-starter	strongswan/restart	boolean	true
+# Do you really want to stop the Quagga daemon?
+quagga	quagga/really_stop	boolean	false
+# Keep number of DNS-queries minimal (Dial-on-Demand)?
+exim4-config	exim4/dc_minimaldns	boolean	false
+# Run proftpd:
+# Choices: from inetd, standalone
+proftpd-basic	shared/proftpd/inetd_or_standalone	select	standalone
+# Country code for the X.509 certificate request:
+strongswan-starter	strongswan/x509_country_code	string	AT
+# Network interfaces on which the DHCP server should listen:
+isc-dhcp-server	isc-dhcp-server/interfaces	string	
+# Deprecated options in configuration file
+snort-common	snort/deprecated_config	note	
+# Time zone:
+# Choices: Abidjan, Accra, Addis_Ababa, Algiers, Asmara, Bamako, Bangui, Banjul, Bissau, Blantyre, Brazzaville, Bujumbura, Cairo, Casablanca, Ceuta, Conakry, Dakar, Dar_es_Salaam, Djibouti, Douala, El_Aaiun, Freetown, Gaborone, Harare, Johannesburg, Juba, Kampala, Khartoum, Kigali, Kinshasa, Lagos, Libreville, Lome, Luanda, Lubumbashi, Lusaka, Malabo, Maputo, Maseru, Mbabane, Mogadishu, Monrovia, Nairobi, Ndjamena, Niamey, Nouakchott, Ouagadougou, Porto-Novo, Sao_Tome, Timbuktu, Tripoli, Tunis, Windhoek
+tzdata	tzdata/Zones/Africa	select	
+# Invalid Shorewall6 configuration detected
+shorewall6	shorewall6/invalid_config	error	
+# PAM profiles to enable:
+# Choices: Unix authentication, Register user sessions in the systemd control group hierarchy
+libpam-runtime	libpam-runtime/profiles	multiselect	unix, systemd
+# Time zone:
+# Choices: Adak, Anchorage, Anguilla, Antigua, Araguaina, Argentina/Buenos_Aires, Argentina/Catamarca, Argentina/Cordoba, Argentina/Jujuy, Argentina/La_Rioja, Argentina/Mendoza, Argentina/Rio_Gallegos, Argentina/Salta, Argentina/San_Juan, Argentina/San_Luis, Argentina/Tucuman, Argentina/Ushuaia, Aruba, Asuncion, Atikokan, Atka, Bahia, Bahia_Banderas, Barbados, Belem, Belize, Blanc-Sablon, Boa_Vista, Bogota, Boise, Cambridge_Bay, Campo_Grande, Cancun, Caracas, Cayenne, Cayman, Chicago, Chihuahua, Coral_Harbour, Costa_Rica, Creston, Cuiaba, Curacao, Danmarkshavn, Dawson, Dawson_Creek, Denver, Detroit, Dominica, Edmonton, Eirunepe, El_Salvador, Ensenada, Fortaleza, Glace_Bay, Godthab, Goose_Bay, Grand_Turk, Grenada, Guadeloupe, Guatemala, Guayaquil, Guyana, Halifax, Havana, Hermosillo, Indiana/Indianapolis, Indiana/Knox, Indiana/Marengo, Indiana/Petersburg, Indiana/Tell_City, Indiana/Vevay, Indiana/Vincennes, Indiana/Winamac, Inuvik, Iqaluit, Jamaica, Juneau, Kentucky/Louisville, Kentucky/Monticello, Kralendijk, La_Paz, Lima, Los_Angeles, Lower_Princes, Maceio, Managua, Manaus, Marigot, Martinique, Matamoros, Mazatlan, Menominee, Merida, Metlakatla, Mexico_City, Miquelon, Moncton, Monterrey, Montevideo, Montreal, Montserrat, Nassau, New_York, Nipigon, Nome, Noronha, North_Dakota/Beulah, North_Dakota/Center, North_Dakota/New_Salem, Ojinaga, Panama, Pangnirtung, Paramaribo, Phoenix, Port-au-Prince, Port_of_Spain, Porto_Acre, Porto_Velho, Puerto_Rico, Rainy_River, Rankin_Inlet, Recife, Regina, Resolute, Rio_Branco, Santa_Isabel, Santarem, Santiago, Santo_Domingo, Sao_Paulo, Scoresbysund, Shiprock, Sitka, St_Barthelemy, St_Johns, St_Kitts, St_Lucia, St_Thomas, St_Vincent, Swift_Current, Tegucigalpa, Thule, Thunder_Bay, Tijuana, Toronto, Tortola, Vancouver, Virgin, Whitehorse, Winnipeg, Yakutat, Yellowknife
+tzdata	tzdata/Zones/America	select	
+# Default parameters changed since version 5.2.1
+snmpd	snmpd/upgradefrom521	note	
+# Enable saned as a standalone server?
+sane-utils	sane-utils/saned_run	boolean	false
+# Time zone:
+# Choices: Longyearbyen
+tzdata	tzdata/Zones/Arctic	select	
+# Additional custom options:
+snort	snort/options	string	
+# Reconfigure exim4-config instead of this package
+exim4-daemon-light	exim4-daemon-light/drec	error	
+# Choose software to install:
+# Choices: 
+tasksel	tasksel/first	multiselect	
+# Geographic area:
+# Choices: Africa, America, Antarctica, Australia, Arctic Ocean, Asia, Atlantic Ocean, Europe, Indian Ocean, Pacific Ocean, System V timezones, US, None of the above
+tzdata	tzdata/Areas	select	Etc
+# Conflicts found in three-way merge
+ucf	ucf/conflicts_found	error	
+# User account for running the BIND9 daemon:
+bind9	bind9/start-as-user	string	bind
+# Organizational unit for the X.509 certificate request:
+strongswan-starter	strongswan/x509_organizational_unit	string	
+# for internal use
+x11-common	x11-common/xwrapper/actual_allowed_users	string	console
+# Override local changes to /etc/pam.d/common-*?
+libpam-runtime	libpam-runtime/override	boolean	false
+# Organization name for the X.509 certificate request:
+strongswan-starter	strongswan/x509_organization_name	string	
+# Services to restart to make them use the new libraries:
+libssl1.0.0:amd64	libssl1.0.0/restart-services	string	
+# Host name:
+ssl-cert	make-ssl-cert/hostname	string	localhost
+# Users allowed to start the X server:
+# Choices: Root Only, Console Users Only, Anybody
+x11-common	x11-common/xwrapper/allowed_users	select	Console Users Only
+# Really leave the mail system unconfigured?
+exim4-config	exim4/no_config	boolean	true
+# Services to restart for PAM library upgrade:
+libpam0g:amd64	libpam0g/restart-services	string	
+# Incompatible PAM profiles selected.
+libpam-runtime	libpam-runtime/conflicts	error	

@@ -298,6 +298,8 @@ FILESYSTEM_BASEPACKAGES_ARCHIVE:=base-deb-packages-$(TARGET_ARCH)
 
 FILESYSTEM_TWEAKS_DIR:=fs-tweaks
 # Sample value for FILESYSTEM_TWEAKS_DIR: fs-tweaks
+FILESYSTEM_PACKAGES_DEBCONF:=netkit-fs-debconf
+# Sample value for FILESYSTEM_PACKAGES_DEBCONF: netkit-fs-debconf
 
 FILESYSTEM_TARGET_DIR:=$(NETKIT_HOME)/fs
 # Sample value for FILESYSTEM_TARGET_DIR: netkit/fs
@@ -334,8 +336,8 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 
 .filesystem-setup-complete: $(FILESYSTEM_MOUNT_DIR) slirp
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
-	$(NETKIT_HOME)/kernel/netkit-kernel umid=netkit-setup-vm mem=256M ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=none con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
-	touch .filesystem-setup-complete
+	$(NETKIT_HOME)/kernel/netkit-kernel umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
+	[ ! -f /tmp/.netkit-setup-running ]
 
 $(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
 # This is the only phase that unavoidably requires root privileges (note:
@@ -352,8 +354,9 @@ else    # ifneq ($(shell whoami),root)
 # but mountpoint returns success), which may for example be the case if the
 # Makefile was previously interrupted.
 	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
-	$(DEBOOTSTRAP) --unpack-tarball=$(realpath $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz) --arch=$(TARGET_FS_ARCH) $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
+	$(DEBOOTSTRAP) --unpack-tarball=$(realpath $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz) --arch=$(TARGET_FS_ARCH) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
 	cp -rd $(FILESYSTEM_TWEAKS_DIR)/* $(FILESYSTEM_MOUNT_DIR)
+   cp $(FILESYSTEM_PACKAGES_DEBCONF) $(FILESYSTEM_MOUNT_DIR)
 # Enable the Netkit setup service
 	ln -s /etc/systemd/netkit/netkit-setup.service $(FILESYSTEM_MOUNT_DIR)/etc/systemd/system/multi-user.target.wants
 	umount $(FILESYSTEM_MOUNT_DIR)
@@ -377,7 +380,7 @@ $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz:
 	$(call display_message,filesystem,"Downloading packages for minimal Debian installation")
 # Simply downloading .deb packages should not really require root privileges, so
 # we use fakeroot here
-	$(FAKEROOT) $(DEBOOTSTRAP) --download-only --arch=$(TARGET_FS_ARCH) --make-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
+	$(FAKEROOT) $(DEBOOTSTRAP) --download-only --arch=$(TARGET_FS_ARCH) --make-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
 	rm -fr $(FILESYSTEM_MOUNT_DIR)
 	ln -fs $(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
 

@@ -23,3 +23,7 @@
 becho() {
    echo "\033[35;1m$*\033[0m"
 }
+
+# Exit if any commands fail
+set -e
+

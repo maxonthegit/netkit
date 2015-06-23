@@ -360,6 +360,9 @@ else    # ifneq ($(shell whoami),root)
 # Makefile was previously interrupted.
 	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
 	$(DEBOOTSTRAP) --unpack-tarball=$(realpath $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz) --arch=$(TARGET_FS_ARCH) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
+# Prepare a list of APT sources based on the official list of primary Debian mirrors
+	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
+	wget -O - "http://ftp.it.debian.org/debian/README.mirrors.txt" | sed -n '/Primary/,/Secondary/p' | awk '/i386/ {split(substr($0,match($0,/ftp/)),a); print "# deb http://" a[1] a[2] " $(DEBIAN_RELEASE) main contrib non-free"}' | sed '/ftp\.it/ s/^# //' > $(FILESYSTEM_MOUNT_DIR)/etc/apt
 	cp -rd $(FILESYSTEM_TWEAKS_DIR)/* $(FILESYSTEM_MOUNT_DIR)
 	cp $(FILESYSTEM_PACKAGES_DEBCONF) $(FILESYSTEM_MOUNT_DIR)
 # Enable the Netkit setup service

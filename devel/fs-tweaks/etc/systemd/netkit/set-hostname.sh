@@ -35,6 +35,6 @@ done | awk -F= '
 )
 
 if [ -n "$NEW_HOSTNAME" ]; then
-   /usr/bin/hostnamectl set-hostname "$HOSTNAME"
+   /usr/bin/hostnamectl set-hostname "$NEW_HOSTNAME"
 fi
 

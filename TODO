@@ -15,11 +15,8 @@
 
 === Filesystem ===
 
-- Installation of snort, dnsmasq, isc-dhcp-server and freeradius fails
-- debconf-set-selections
 - Netkit-specific scripts miss LSB tags and overrides
 - Check that shared and machine-specific files are correctly copied inside virtual machines (on first boot only)
-- Makefile: add a check that in-vm setup has completed successfully
 - Is mirroring of file permissions from the user's to the group's and other's still required? (in netkit-phase1)
 - Set default standard output and error of systemd to journal+console for Netkit scripts (WARNING: some settings in 10-systemd-settings already exist)
 - Links quagga <-> zebra (?)
@@ -29,7 +26,6 @@
 - /etc/default for snmpd and xorp
 - pam.d/quagga tweak (?)
 - Move quagga sample configurations from /usr/share/doc/quagga/examples to /etc/quagga (beware of file permissions)
-- Build list of installed packages
 - Add Netkit-specific scripts
 
 - Packages to be installed:

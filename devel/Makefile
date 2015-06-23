@@ -332,9 +332,10 @@ endif
 endif
 
 $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-complete
-	$(call display_message,filesystem,"Creating a hard link to the filesystem image in its default location")
+	$(call display_message,filesystem,"Sparsifying filesystem image and moving it to its default location")
 	mkdir -p $(FILESYSTEM_TARGET_DIR)
-	cp -fl $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
+	cp --sparse=always -f $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
+	rm -f $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 	$(call display_message,filesystem,"Saving list of packages")
 	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 

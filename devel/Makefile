@@ -341,7 +341,7 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 
 .filesystem-setup-complete: $(FILESYSTEM_MOUNT_DIR) slirp
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
-	$(NETKIT_HOME)/kernel/netkit-kernel umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
+	$(NETKIT_HOME)/kernel/netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
 	[ ! -f /tmp/.netkit-setup-running ]
 
 $(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz

@@ -27,7 +27,7 @@ becho "Setting pre-login welcome messages"
 : > /etc/motd
 
 cat >/etc/issue <<EOF
-Welcome to Netkit release $(</etc/netkit-version) (kernel \\r)
+Welcome to Netkit release $(cat /etc/netkit-version) (kernel \\r, \\m)
 FS built on $(date -R),
 based on \\S
 EOF

@@ -21,21 +21,12 @@
 - Set default standard output and error of systemd to journal+console for Netkit scripts (WARNING: some settings in 10-systemd-settings already exist)
 - Links quagga <-> zebra (?)
 - Link /etc/init.d/bind -> /etc/init.d/bind9 (creating a link is apparently not enough)
-- update-exim4.conf
 - apt/sources.list
-- /etc/default for snmpd and xorp
-- pam.d/quagga tweak (?)
 - Move quagga sample configurations from /usr/share/doc/quagga/examples to /etc/quagga (beware of file permissions)
 - Add Netkit-specific scripts
 
-- Packages to be installed:
 
-pgset (packet generator) => must be compiled from source, see http://man7.org/linux/man-pages/man8/pg3.8.html
-(http load balancer?)
-pdns-recursor [*]
-procmail [*]
-ike (ike-server)
-pimd [conflicts with smcroute]
-racoon [conflicts with ike-server]
-exim4 [conflicts with postfix]
+== Miscellaneous notes ==
+
+pgset (packet generator) => found at http://lxr.free-electrons.com/source/Documentation/networking/pktgen.txt?v=2.4.37#L49
 

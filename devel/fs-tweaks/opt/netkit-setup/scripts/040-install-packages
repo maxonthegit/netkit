@@ -51,7 +51,7 @@ snort
 # DNS
 bind9
 pdns-server
-pdnsd
+pdns-recursor
 
 # Routing
 bird
@@ -62,7 +62,9 @@ xorp
 # Servers and daemons
 apache2
 exim4
+exim4-daemon-heavy
 freeradius
+haproxy
 isc-dhcp-server
 nfs-kernel-server
 openssh-server
@@ -71,6 +73,7 @@ radvd
 rinetd
 samba
 snmpd
+spamassassin
 squid3
 tcpd
 telnetd
@@ -113,8 +116,8 @@ nfs-common
 nmap
 openssh-client
 paris-traceroute
+procmail
 smbclient
-smcroute
 snmp
 strongswan
 strongswan-charon
@@ -162,6 +165,7 @@ screen
 sendip
 socat
 strace
+sudo
 tmux
 uml-utilities
 vacation
@@ -176,7 +180,7 @@ EOF
 # (note: this requires using `|| true' because bash would abort
 # script execution otherwise)
 while read SERVICE; do
-   systemctl stop $SERVICE
+   systemctl stop $SERVICE || true
 done <<EOF
 bind9
 pdnsd
@@ -185,6 +189,7 @@ EOF
 cat <<EOF | sed 's/#.*$//' | grep -v "^ *$" | xargs apt-get install -y || true
 dnsmasq # Requires stopping bind9 before being installed
 isc-dhcp-client # Installation scripts fail because they attempt to start the service without any configured interfaces to listen on, and because the only available interface is of type "Serial Line IP", not Ethernet
+pimd # Expected to fail because of the lack of configured vifs
 EOF
 
 becho "Refreshing list of package files"

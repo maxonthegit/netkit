@@ -22,58 +22,12 @@
 
 . /opt/netkit-setup/utils.sh
 
-becho "Configuring installed packages"
+becho "Applying quagga-specific tweaks"
+sed -i -r '/^zebra=/ s/no/yes/' /etc/quagga/daemons
+for SAMPLE_FILE in /usr/share/doc/quagga/examples/*; do ln -s $SAMPLE_FILE /etc/quagga/; done
+echo "password zebra" > /etc/quagga/zebra.conf
 
-# Disable boot-time services
-while read SERVICENAME; do
-systemctl disable $SERVICENAME
-done << EOF
-apache2
-bind9
-dhcpcd
-dnsmasq
-ebtables
-exim4
-freeradius
-haproxy
-inetd
-ipvsadm
-isc-dhcp-server
-mrd6
-nfs-common
-nfs-kernel-server
-nmbd
-openvpn
-openvswitch-switch
-pdns
-pdnsd
-pdns-recursor
-pimd
-polkitd
-pppd-dns
-proftpd
-quagga
-radvd
-rinetd
-rpcbind
-rsyslog
-samba-ad-dc
-setkey
-shorewall
-shorewall6
-smbd
-snmpd
-snort
-spamassassin
-squid3
-ssh
-strongswan
-uml-utilities
-uuidd
-xorp
-cryptsetup.target
-graphical.target
-mail-transport-agent.target
-nss-lookup.target
-swap.target
+cat <<"EOF" >>/etc/bash.bashrc
+export VTYSH_PAGER=/bin/cat
 EOF
+

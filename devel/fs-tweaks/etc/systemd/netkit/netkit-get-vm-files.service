@@ -24,6 +24,7 @@ Description=Copy (configuration) files inside virtual machine
 DefaultDependencies=no
 Conflicts=shutdown.target
 After=netkit-mount-host-dirs.service
+After=systemd-remount-fs.service
 Before=systemd-user-sessions.service
 ConditionPathExists=!/etc/vhostconfigured
 

@@ -23,6 +23,7 @@
 Description=Mount kernel modules directory
 DefaultDependencies=no
 Conflicts=shutdown.target
+After=systemd-remount-fs.service
 Before=systemd-modules-load.service
 ConditionKernelCommandLine=modules
 

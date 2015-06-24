@@ -30,6 +30,8 @@ cat >>/etc/bash.bashrc <<"EOF"
 # Netkit-specific tweaks
 echo -n -e "\e]0;$(hostname) ($(basename $(tty)))\a"
 echo -n -e "\e]2;$(hostname) ($(basename $(tty)))\a"
+# The following is understood by Konsole
+echo -n -e "\e]30;$(hostname) ($(basename $(tty)))\a"
 
 alias grep='grep --color=auto'
 alias ls='ls --color=auto'

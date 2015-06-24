@@ -17,11 +17,11 @@
 
 - Netkit-specific scripts miss LSB tags and overrides
 - Set default standard output and error of systemd to journal+console for Netkit scripts (WARNING: some settings in 10-systemd-settings already exist)
-- [done - to be verified] Links quagga <-> zebra (?)
-- [done - to be verified] Link /etc/init.d/bind -> /etc/init.d/bind9 (creating a link is apparently not enough)
 - Add Netkit-specific scripts
 
 == Miscellaneous notes ==
 
-pgset (packet generator) => found at http://lxr.free-electrons.com/source/Documentation/networking/pktgen.txt?v=2.4.37#L49
+- pgset (packet generator) => found at http://lxr.free-electrons.com/source/Documentation/networking/pktgen.txt?v=2.4.37#L49
+- Install FlowVisor
+- Install sFlow
 

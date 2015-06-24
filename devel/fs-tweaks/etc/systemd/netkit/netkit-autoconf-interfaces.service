@@ -20,19 +20,19 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Setting hostname
+Description=Auto-configuring network interfaces
 DefaultDependencies=no
 Conflicts=shutdown.target
-After=systemd-remount-fs.service
 Before=systemd-user-sessions.service
-Before=netkit-get-vm-files.service
-ConditionKernelCommandLine=name
-ConditionPathExists=!/etc/vhostconfigured
+After=systemd-remount-fs.service
+ConditionKernelCommandLine=|netkit.defroute
+ConditionKernelCommandLine=|netkit.ipaddr
+ConditionKernelCommandLine=|netkit.ns
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/set-hostname.sh
+ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/autoconf-interfaces.sh
 
 [Install]
 WantedBy=basic.target

@@ -21,6 +21,7 @@
 
 [Unit]
 Description=Netkit setup scripts
+After=systemd-remount-fs.service
 
 [Service]
 Type=idle

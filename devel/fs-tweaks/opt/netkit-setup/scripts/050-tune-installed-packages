@@ -84,7 +84,7 @@ becho "Creating convenient symbolic links to support old service names"
 # Remember to update the old-services-wrapper script every time
 # changes are made to the following list.
 while read SERVICENAME; do
-ln -s old-services-wrapper $SERVICENAME
+ln -s old-services-wrapper /etc/init.d/$SERVICENAME
 done <<EOF
 zebra
 bind

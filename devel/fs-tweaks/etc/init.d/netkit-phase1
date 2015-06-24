@@ -34,16 +34,6 @@ case "$1" in
 
       # Configure virtual host only at first boot
       if [ ! -e /etc/vhostconfigured ]; then
-
-         vecho "Configuring virtual host (for first boot)..."
-         if [ -n "$HOSTNAME" ]; then
-            vecho "Setting hostname..."
-            echo $HOSTNAME > /etc/hostname
-            hostname --file /etc/hostname
-            sed -i "s/^.*127\.0\.0\.1.*$/127.0.0.1 $HOSTNAME/" /etc/hosts
-         fi
-
-         
          [ ! -z "$COW" ] && touch /etc/vhostconfigured
       fi
 

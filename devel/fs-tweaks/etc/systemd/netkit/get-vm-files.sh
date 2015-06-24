@@ -33,7 +33,7 @@ if [ "$(echo /hostlab/shared/*)" != "/hostlab/shared/*" ]; then
    # directory itself, in order to properly cope with virtual
    # machine directories that are symbolic links.
    cd /hostlab/shared
-   tar --exclude=CVS --exclude=.svn -c * | tar --no-same-owner -C / -xv | \
+   tar --exclude=CVS --exclude=.svn -c * | tar --no-same-owner --keep-directory-symlink -C / -xv | \
    # Now mirror user's permissions to the group and to others
    xargs stat --format="%a %n" | { while read PERM FILE; do chmod ${PERM:0:1}${PERM:0:1}${PERM:0:1} $FILE; done; }
 fi
@@ -41,7 +41,7 @@ fi
 if [ "$(echo /hostlab/$HOSTNAME/*)" != "/hostlab/$HOSTNAME/*" ]; then
    echo "Copying $HOSTNAME specific files from /hostlab/$HOSTNAME/..."
    cd /hostlab/$HOSTNAME/
-   tar --exclude=CVS --exclude=.svn -c * | tar --no-same-owner -C / -xv | \
+   tar --exclude=CVS --exclude=.svn -c * | tar --no-same-owner --keep-directory-symlink -C / -xv | \
    xargs stat --format="%a %n" | { while read PERM FILE; do chmod ${PERM:0:1}${PERM:0:1}${PERM:0:1} $FILE; done; }
 fi
 

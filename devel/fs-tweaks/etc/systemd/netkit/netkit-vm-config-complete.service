@@ -20,16 +20,21 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Netkit setup scripts
+Description=Marking VM as configured
+DefaultDependencies=no
+Conflicts=shutdown.target
+Before=systemd-user-sessions.service
+After=netkit-get-vm-files.service
+After=netkit-hostname.service
+After=netkit-mount-host-dirs.service
+After=netkit-mount-kernel-modules-dir.service
+ConditionPathExists=!/etc/vhostconfigured
 
 [Service]
-Type=idle
-ExecStart=/bin/run-parts --exit-on-error /opt/netkit-setup/scripts
-TimeoutSec=0
-RemainAfterExit=no
-FailureAction=poweroff-immediate
-SysVStartPriority=99
-StandardOutput=tty
-StandardError=tty
-StandardInput=tty
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/etc/systemd/netkit/config-complete.sh
+
+[Install]
+WantedBy=basic.target
 

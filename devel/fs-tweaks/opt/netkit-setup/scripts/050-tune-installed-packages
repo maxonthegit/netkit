@@ -30,6 +30,7 @@ systemctl disable $SERVICENAME
 done << EOF
 apache2
 bind9
+cron
 dhcpcd
 dnsmasq
 ebtables
@@ -68,6 +69,7 @@ spamassassin
 squid3
 ssh
 strongswan
+systemd-timesyncd
 uml-utilities
 uuidd
 xorp
@@ -77,3 +79,14 @@ mail-transport-agent.target
 nss-lookup.target
 swap.target
 EOF
+
+becho "Creating convenient symbolic links to support old service names"
+# Remember to update the old-services-wrapper script every time
+# changes are made to the following list.
+while read SERVICENAME; do
+ln -s old-services-wrapper $SERVICENAME
+done <<EOF
+zebra
+bind
+EOF
+

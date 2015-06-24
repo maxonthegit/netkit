@@ -30,6 +30,7 @@ systemctl enable /etc/systemd/netkit/netkit-mount-kernel-modules-dir.service
 systemctl enable /etc/systemd/netkit/netkit-mount-host-dirs.service
 systemctl enable /etc/systemd/netkit/netkit-get-vm-files.service
 systemctl enable /etc/systemd/netkit/netkit-hostname.service
+systemctl enable /etc/systemd/netkit/netkit-vm-config-complete.service
 
 #becho "Configuring systemd to write the output of started services to the current tty"
 #sed -i -r "s/.*DefaultStandardOutput.*/DefaultStandardOutput=tty/" /etc/systemd/system.conf

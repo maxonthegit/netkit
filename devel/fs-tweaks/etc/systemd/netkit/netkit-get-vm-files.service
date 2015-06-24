@@ -31,7 +31,6 @@ ConditionPathExists=!/etc/vhostconfigured
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/get-vm-files.sh
-After=netkit-mount-host-dirs.service
 
 [Install]
 WantedBy=basic.target

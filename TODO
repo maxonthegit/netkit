@@ -16,13 +16,10 @@
 === Filesystem ===
 
 - Netkit-specific scripts miss LSB tags and overrides
-- Check that shared and machine-specific files are correctly copied inside virtual machines (on first boot only)
 - Set default standard output and error of systemd to journal+console for Netkit scripts (WARNING: some settings in 10-systemd-settings already exist)
-- Links quagga <-> zebra (?)
-- Link /etc/init.d/bind -> /etc/init.d/bind9 (creating a link is apparently not enough)
-- [done - to be checked] apt/sources.list
+- [done - to be verified] Links quagga <-> zebra (?)
+- [done - to be verified] Link /etc/init.d/bind -> /etc/init.d/bind9 (creating a link is apparently not enough)
 - Add Netkit-specific scripts
-- Create file vhostconfigured
 
 == Miscellaneous notes ==
 

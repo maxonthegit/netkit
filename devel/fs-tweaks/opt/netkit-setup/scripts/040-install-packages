@@ -167,6 +167,7 @@ socat
 strace
 sudo
 tmux
+tree
 uml-utilities
 vacation
 vim

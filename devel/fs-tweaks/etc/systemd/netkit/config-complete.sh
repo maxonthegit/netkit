@@ -26,20 +26,19 @@
 
 # Split kernel command line arguments using a standard `for' cycle, then
 # use awk for faster extraction of the argument of interest.
-NEW_HOSTNAME=$(for KERNEL_PARAMETER in "$@"; do
+IS_COW=$(for KERNEL_PARAMETER in "$@"; do
    echo $KERNEL_PARAMETER
 done | awk -F= '
-   ($1=="name") {
-      print substr($0,6)
+   ($1=="ubd0" && $2 ~ /,/) {
+      print 1
    }'
 )
 
-if [ -n "$NEW_HOSTNAME" ]; then
-   echo "$NEW_HOSTNAME" > /etc/hostname
-   if ! grep -qw "$NEW_HOSTNAME" /etc/hosts; then
-      sed -r -i "/^127\.0\.0\.1\>/ s/\$/ $NEW_HOSTNAME/" /etc/hosts
-      sed -r -i "/^::1\>/ s/\$/ $NEW_HOSTNAME/" /etc/hosts
-   fi
-   /bin/hostname -F /etc/hostname
+# Note: using `[ "$IS_COW" == "1" ] && ...' here is not advised, because
+# the exit status of the script could coincide with the one of the test,
+# causing systemd to detect service startup as failed when IS_COW is
+# different from 1.
+if [ "$IS_COW" == "1" ]; then
+   touch /etc/vhostconfigured
 fi
 

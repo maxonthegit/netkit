@@ -1,9 +1,14 @@
-#     This systemd unit configuration is part of Netkit, a network emulation
-#     environment based on the integration of several existing pieces of
-#     software.
+#!/bin/sh
+
+#     This script is part of Netkit, a network emulation environment
+#     based on the integration of several existing pieces of software.
 #     For more information: http://www.netkit.org/
 #
-#     Copyright (C) 2015
+#     Copyright (C) 2002-2009, 2015
+#         Maurizio Patrignani
+#         Stefano Pettini
+#         Maurizio Pizzonia
+#         Fabio Ricci
 #         Massimo Rimondini (rimondin@ing.uniroma3.it)
 #     Computer Networks Research Group, Roma Tre University
 # 
@@ -19,17 +24,22 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-[Unit]
-Description=Netkit setup scripts
+SERVICE_NAME=$(basename $0)
 
-[Service]
-Type=idle
-ExecStart=/bin/run-parts --exit-on-error /opt/netkit-setup/scripts
-TimeoutSec=0
-RemainAfterExit=no
-FailureAction=poweroff-immediate
-SysVStartPriority=99
-StandardOutput=tty
-StandardError=tty
-StandardInput=tty
+case $SERVICE_NAME in
+	zebra)
+		TARGET_SERVICE_NAME=quagga
+		;;
+	bind)
+		TARGET_SERVICE_NAME=bind9
+		;;
+esac
+
+cat <<EOF 1>&2
+Notice: service name "$SERVICE_NAME" is deprecated. For your convenience,
+"$TARGET_SERVICE_NAME" will be started instead, but please remember to update
+your scripts.
+EOF
+
+/etc/init.d/$TARGET_SERVICE_NAME "$@"
 

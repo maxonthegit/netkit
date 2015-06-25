@@ -5,6 +5,7 @@ sudo: true
 install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq gcc-multilib debootstrap fakeroot dpkg-dev
+  - sudo MAKEDEV std
   - sudo chmod a+rw /dev/loop*
 
 # Custom build script

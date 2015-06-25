@@ -196,15 +196,15 @@ filesystem64:
 
 TIMESTAMP:=$(shell date +%Y%m%d-%H%M%S)
 
-check_not_empty=$(if $1,$1,$(error $2))
+check_not_empty=$(if $(1),$(1),$(2))
 
-find_command_actual=$(word 1,$(shell whereis -b $1 | tr ' ' '\n' | tail -n +2 | egrep --color=never "$1( |$$)"))
-find_command=$(call check_not_empty,$(call find_command_actual,$1),Command not found: $1)
+find_command_actual=$(word 1,$(shell whereis -b $(1) | tr ' ' '\n' | tail -n +2 | egrep --color=never "$(1)( |$$)"))
+find_command=$(call check_not_empty,$(call find_command_actual,$(1)),$(error Command not found: $(1)))
 
 # The following assignemnts are used to mount the filesystem image using a
 # loopback device
 LOSETUP=$(call find_command,losetup)
-LOOP_DEVICE=$(call check_not_empty,$(shell $(LOSETUP) -f),Not enough permissions to access loop devices)
+LOOP_DEVICE=$(call check_not_empty,$(shell $(LOSETUP) -f),$(error Not enough permissions to access loop devices))
 
 # The following assignment determines the filesystem type used inside the
 # Netkit filesystem image
@@ -229,17 +229,21 @@ UNPACKED_KERNEL_DIR:=$(KERNEL_BUILD_DIR)/$(shell echo $(KERNEL_PACKAGE_FILE) | s
 # Sample value for UNPACKED_KERNEL_DIR: linux-3.19.3
 KERNEL_PATCHES_DIR:=kernel-patches
 # Sample value for KERNEL_PATCHES_DIR: kernel-patches
-KERNEL_VERSION_NUMBER:=$(shell make -s -C $(UNPACKED_KERNEL_DIR) kernelversion)
+KERNEL_VERSION_NUMBER=$(if $(wildcard $(UNPACKED_KERNEL_DIR)),$(shell make -s -C $(UNPACKED_KERNEL_DIR) kernelversion),)
 # Sample value for KERNEL_VERSION_NUMBER: 3.19.3
 # Note: getting kernel version number from the package file (or uncompressed directory name)
 # is not reliable. For example, the package for kernel 4.0.0 is labelled with version number 4.0.
+# Also, KERNEL_VERSION_NUMBER and KERNEL_TARGET_FILE_NAME cannot be simply expanded variables
+# (i.e., assigned with `:='), because the kernel directory may not exist yet at this stage.
 KERNEL_TARGET_DIR:=$(NETKIT_HOME)/kernel
 # Sample value for KERNEL_TARGET_DIR: netkit/kernel
-KERNEL_TARGET_FILE_NAME:=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
+KERNEL_TARGET_FILE_NAME=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
 # Sample value for KERNEL_TARGET_FILE_NAME: netkit-kernel-3.19.3-x86_64
 KERNEL_TARGET_MODULES_DIR:=$(NETKIT_HOME)/kernel/modules-$(TARGET_ARCH)
 # Sample value for KERNEL_TARGET_MODULES_DIR: netkit/kernel/modules-x86_64
 
+def:
+	echo $(KERNEL_VERSION_NUMBER)
 
 kernel: $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep
 
@@ -247,7 +251,7 @@ $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME): $(UNPACKED_KERNEL_DIR)/vmlinux
 	$(call display_message,kernel,"Creating a hard link to the kernel in its default location and enabling it")
 	mkdir -p $(KERNEL_TARGET_DIR)
 	cp -fl $(UNPACKED_KERNEL_DIR)/vmlinux $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME)
-	ln -fs $(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_DIR)/netkit-kernel
+	ln -fs $(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_DIR)/netkit-kernel-$(TARGET_ARCH)
 
 $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep: $(UNPACKED_KERNEL_DIR)/vmlinux
 	$(call display_message,kernel,"Moving kernel modules to an appropriate location")
@@ -350,7 +354,7 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 
 .filesystem-setup-complete: $(FILESYSTEM_MOUNT_DIR) slirp
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
-	$(NETKIT_HOME)/kernel/netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
+	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
 	[ ! -f /tmp/.netkit-setup-running ]
 
 $(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz

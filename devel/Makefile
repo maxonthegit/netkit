@@ -196,14 +196,15 @@ filesystem64:
 
 TIMESTAMP:=$(shell date +%Y%m%d-%H%M%S)
 
-find_command_actual=$(word 1,$(shell whereis -b $1 | tr ' ' '\n' | tail -n +2 | egrep --color=never "$1( |$$)"))
 check_not_empty=$(if $1,$1,$(error $2))
+
+find_command_actual=$(word 1,$(shell whereis -b $1 | tr ' ' '\n' | tail -n +2 | egrep --color=never "$1( |$$)"))
 find_command=$(call check_not_empty,$(call find_command_actual,$1),Command not found: $1)
 
 # The following assignemnts are used to mount the filesystem image using a
 # loopback device
 LOSETUP=$(call find_command,losetup)
-LOOP_DEVICE=$(shell $(LOSETUP) -f)
+LOOP_DEVICE=$(call check_not_empty,$(shell $(LOSETUP) -f),Not enough permissions to access loop devices)
 
 # The following assignment determines the filesystem type used inside the
 # Netkit filesystem image
@@ -228,8 +229,10 @@ UNPACKED_KERNEL_DIR:=$(KERNEL_BUILD_DIR)/$(shell echo $(KERNEL_PACKAGE_FILE) | s
 # Sample value for UNPACKED_KERNEL_DIR: linux-3.19.3
 KERNEL_PATCHES_DIR:=kernel-patches
 # Sample value for KERNEL_PATCHES_DIR: kernel-patches
-KERNEL_VERSION_NUMBER:=$(shell echo $(KERNEL_PACKAGE_FILE) | sed -r 's/^[^0-9]*-([0-9].*)\.tar.*/\1/')
+KERNEL_VERSION_NUMBER:=$(shell make -s -C $(UNPACKED_KERNEL_DIR) kernelversion)
 # Sample value for KERNEL_VERSION_NUMBER: 3.19.3
+# Note: getting kernel version number from the package file (or uncompressed directory name)
+# is not reliable. For example, the package for kernel 4.0.0 is labelled with version number 4.0.
 KERNEL_TARGET_DIR:=$(NETKIT_HOME)/kernel
 # Sample value for KERNEL_TARGET_DIR: netkit/kernel
 KERNEL_TARGET_FILE_NAME:=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
@@ -251,6 +254,9 @@ $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules
 	mkdir -p $(KERNEL_TARGET_MODULES_DIR)
 	$(MAKE) -C $(UNPACKED_KERNEL_DIR) ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH=$(KERNEL_TARGET_MODULES_DIR) modules_install
 	rm -f $(KERNEL_TARGET_MODULES_DIR)/lib/modules/*/{build,source}
+# Make sure that the modules.dep file is newer than vmlinux (and do not create
+# a modules.dep file if none exists)
+	touch -c $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep
 
 $(UNPACKED_KERNEL_DIR)/vmlinux: $(UNPACKED_KERNEL_DIR)/.config $(KERNEL_UNPACKED_DEBS_DIR)/usr
 	$(call display_message,kernel,"Compiling kernel")

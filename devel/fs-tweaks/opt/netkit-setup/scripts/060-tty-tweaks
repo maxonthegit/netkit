@@ -28,6 +28,9 @@ ln -s /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/
 becho "Disabling reserved tty on tty6"
 sed -i 's/.*ReserveVT.*/ReserveVT=0/' /etc/systemd/logind.conf
 
+becho "Disabling getty on non-existing virtual terminals"
+sed -i 's/ConditionPathExists.*tty0/ConditionPathExists=\/dev\/%I/' /lib/systemd/system/getty@.service
+
 becho "Enabling root login on tty0"
 sed -i '/^tty1$/i tty0' /etc/securetty
 

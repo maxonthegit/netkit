@@ -26,6 +26,7 @@ becho "Applying quagga-specific tweaks"
 sed -i -r '/^zebra=/ s/no/yes/' /etc/quagga/daemons
 for SAMPLE_FILE in /usr/share/doc/quagga/examples/*; do ln -s $SAMPLE_FILE /etc/quagga/; done
 echo "password zebra" > /etc/quagga/zebra.conf
+ln -s quagga /etc/zebra
 
 cat <<"EOF" >>/etc/bash.bashrc
 export VTYSH_PAGER=/bin/cat

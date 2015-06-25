@@ -32,16 +32,18 @@ if [ "$(echo /hostlab/shared/*)" != "/hostlab/shared/*" ]; then
    # tar all the files inside the directory instead of just the
    # directory itself, in order to properly cope with virtual
    # machine directories that are symbolic links.
-   cd /hostlab/shared
-   tar --exclude=CVS --exclude=.svn -c * | tar --no-same-owner --keep-directory-symlink -C / -xv | \
-   # Now mirror user's permissions to the group and to others
+   tar --absolute-names --exclude=CVS --exclude=.svn -c /hostlab/shared/ | \
+   tar --absolute-names --no-same-owner --keep-directory-symlink --strip-components=2 -C / -xv | \
+   # Now mirror user's permissions to the group and to others, except for directories
+   sed -r 's/^\/hostlab\/shared//' | grep -v "/$" | \
    xargs stat --format="%a %n" | { while read PERM FILE; do chmod ${PERM:0:1}${PERM:0:1}${PERM:0:1} $FILE; done; }
 fi
 
 if [ "$(echo /hostlab/$HOSTNAME/*)" != "/hostlab/$HOSTNAME/*" ]; then
    echo "Copying $HOSTNAME specific files from /hostlab/$HOSTNAME/..."
-   cd /hostlab/$HOSTNAME/
-   tar --exclude=CVS --exclude=.svn -c * | tar --no-same-owner --keep-directory-symlink -C / -xv | \
+   tar --absolute-names --exclude=CVS --exclude=.svn -c /hostlab/$HOSTNAME/ | \
+   tar --absolute-names --no-same-owner --keep-directory-symlink --strip-components=2 -C / -xv | \
+   sed -r 's/^\/hostlab\/[^/]+//' | grep -v "/$" | \
    xargs stat --format="%a %n" | { while read PERM FILE; do chmod ${PERM:0:1}${PERM:0:1}${PERM:0:1} $FILE; done; }
 fi
 

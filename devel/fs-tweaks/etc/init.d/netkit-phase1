@@ -1,49 +1,5 @@
-
-
-
-### BEGIN INIT INFO
-# Provides:          netkit-phase2
-# Required-Start:
-# Required-Stop:
-# Should-Start:
-# Should-Stop:
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Netkit phase 2
-# Description:       This is a Netkit initialization script. It is intended for
-#                    usage inside virtual machines.
-### END INIT INFO
-
-# ANSI style escape sequences
-DELIMITER_TEXT=$'\e[34;1m'
-NORMAL_TEXT=$'\e[0m\e[34m'
-PLAIN_TEXT=$'\e[0m'
-INFO_FIELD=$'\e[34;1m'
-
-
-case "$1" in
-   start) 
-
-      ASSIGN_VARIABLES=`cat /proc/cmdline | awk -v FS== -v RS=' ' \
-         '
-            ($1=="exec") {print "COMMAND=" $2}
             ($1=="test") {print "TEST=" $1}
-         '`
 
-      eval "$ASSIGN_VARIABLES"
-
-      if [ -f /hostlab/$HOSTNAME.startup ]; then
-         echo
-         echo ">>> Running $HOSTNAME specific startup script..."
-         /bin/sh -c 'source /hostlab/$HOSTNAME.startup'
-         echo ">>> End of $HOSTNAME specific startup script."
-         echo
-      fi
-
-      if [ -x "$COMMAND" ]; then
-         echo "Executing $COMMAND ..."
-         $COMMAND
-      fi
 
 
 
@@ -82,28 +38,5 @@ case "$1" in
       fi
       
 
-      echo "${DELIMITER_TEXT}--- Netkit phase 2 initialization terminated ---${PLAIN_TEXT}"
-      echo
-      ;;
-
-   stop)
-      echo
-      echo "${DELIMITER_TEXT}--- Starting Netkit phase 2 shutdown script ---${NORMAL_TEXT}"
-
-      if [ -f /hostlab/$HOSTNAME.shutdown ]; then
-         echo
-         echo ">>> Running $HOSTNAME specific shutdown script..."
-         /bin/sh -c 'source /hostlab/$HOSTNAME.shutdown'
-         echo ">>> End of $HOSTNAME specific shutdown script."
-         echo
-      fi
-
-      if [ -f /hostlab/shared.shutdown ]; then
-         echo
-         echo ">>> Running shared shutdown script..."
-         /bin/sh -c 'source /hostlab/shared.shutdown'
-         echo ">>> End of shared shutdown script."
-         echo
-      fi
 
       

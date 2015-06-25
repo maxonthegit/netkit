@@ -20,9 +20,11 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Setting hostname
+Description=Set hostname
 DefaultDependencies=no
 Conflicts=shutdown.target
+Conflicts=halt.target
+Conflicts=reboot.target
 After=systemd-remount-fs.service
 Before=systemd-user-sessions.service
 Before=netkit-get-vm-files.service

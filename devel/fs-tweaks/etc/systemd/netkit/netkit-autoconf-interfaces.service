@@ -20,9 +20,11 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Auto-configuring network interfaces
+Description=Auto-configure network interfaces
 DefaultDependencies=no
 Conflicts=shutdown.target
+Conflicts=halt.target
+Conflicts=reboot.target
 Before=systemd-user-sessions.service
 After=systemd-remount-fs.service
 ConditionKernelCommandLine=|netkit.defroute

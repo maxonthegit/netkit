@@ -81,12 +81,15 @@ swap.target
 EOF
 
 becho "Creating convenient symbolic links to support old service names"
-# Remember to update the old-services-wrapper script every time
+# Remember to update the old-services-wrapper.sh script every time
 # changes are made to the following list.
 while read SERVICENAME; do
-ln -s old-services-wrapper /etc/init.d/$SERVICENAME
+ln -s /etc/systemd/netkit/old-services-wrapper.sh /etc/init.d/$SERVICENAME
 done <<EOF
 zebra
 bind
 EOF
+
+becho "Changing shell pointed to by /bin/sh to bash"
+ln -fs bash /bin/sh
 

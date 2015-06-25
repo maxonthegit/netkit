@@ -20,23 +20,29 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Mark VM as configured
+Description=Run shutdown scripts
 DefaultDependencies=no
-Conflicts=shutdown.target
-Conflicts=halt.target
-Conflicts=reboot.target
+Conflicts=basic.target
+Conflicts=default.target
+Conflicts=multi-user.target
 Before=systemd-user-sessions.service
-After=netkit-get-vm-files.service
-After=netkit-hostname.service
-After=netkit-mount-host-dirs.service
-After=netkit-mount-kernel-modules-dir.service
-ConditionPathExists=!/etc/vhostconfigured
+After=systemd-remount-fs.service
+After=netkit-autoconf-interfaces.service
+After=netkit-vm-config-complete.service
+ConditionKernelCommandLine=|exec
+ConditionKernelCommandLine=|hostlab
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/etc/systemd/netkit/config-complete.sh
+ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/shutdown-scripts.sh
+StandardOutput=tty
+StandardError=tty
+StandardInput=tty
+TTYPath=/dev/tty
 
 [Install]
-WantedBy=basic.target
+WantedBy=shutdown.target
+WantedBy=halt.target
+WantedBy=reboot.target
 

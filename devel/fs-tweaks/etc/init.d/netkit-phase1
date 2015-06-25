@@ -27,19 +27,10 @@ case "$1" in
       ASSIGN_VARIABLES=`cat /proc/cmdline | awk -v FS== -v RS=' ' \
          '
             ($1=="exec") {print "COMMAND=" $2}
-            ($1=="hostlab") {print "HOSTLAB=" $2}
             ($1=="test") {print "TEST=" $1}
          '`
 
       eval "$ASSIGN_VARIABLES"
-
-      if [ -f /hostlab/shared.startup ]; then
-         echo
-         echo ">>> Running shared startup script..."
-         /bin/sh -c 'source /hostlab/shared.startup'
-         echo ">>> End of shared startup script."
-         echo
-      fi
 
       if [ -f /hostlab/$HOSTNAME.startup ]; then
          echo

@@ -20,22 +20,21 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Mark VM as configured
+Description=Run lab test scripts
 DefaultDependencies=no
 Conflicts=shutdown.target
 Conflicts=halt.target
 Conflicts=reboot.target
 Before=systemd-user-sessions.service
-After=netkit-get-vm-files.service
-After=netkit-hostname.service
-After=netkit-mount-host-dirs.service
-After=netkit-mount-kernel-modules-dir.service
-ConditionPathExists=!/etc/vhostconfigured
+After=systemd-remount-fs.service
+ConditionKernelCommandLine=test
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/etc/systemd/netkit/config-complete.sh
+ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/lab-test.sh
+StandardOutput=tty
+StandardError=tty
 
 [Install]
 WantedBy=basic.target

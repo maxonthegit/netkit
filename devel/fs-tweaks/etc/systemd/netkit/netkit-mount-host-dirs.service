@@ -23,6 +23,8 @@
 Description=Mount host directories
 DefaultDependencies=no
 Conflicts=shutdown.target
+Conflicts=halt.target
+Conflicts=reboot.target
 After=systemd-remount-fs.service
 Before=netkit-get-vm-files.service
 Before=systemd-user-sessions.service

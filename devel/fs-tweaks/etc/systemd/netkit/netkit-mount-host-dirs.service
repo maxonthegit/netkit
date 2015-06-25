@@ -20,7 +20,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Mount host directories
+Description=(Netkit) Mount host directories
 DefaultDependencies=no
 Conflicts=shutdown.target
 Conflicts=halt.target

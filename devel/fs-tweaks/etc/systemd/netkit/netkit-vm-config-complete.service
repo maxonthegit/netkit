@@ -20,7 +20,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Mark VM as configured
+Description=(Netkit) Mark VM as configured
 DefaultDependencies=no
 Conflicts=shutdown.target
 Conflicts=halt.target
@@ -30,6 +30,10 @@ After=netkit-get-vm-files.service
 After=netkit-hostname.service
 After=netkit-mount-host-dirs.service
 After=netkit-mount-kernel-modules-dir.service
+After=dbus.service
+After=dbus.socket
+After=systemd-udevd.service
+After=networking.service
 ConditionPathExists=!/etc/vhostconfigured
 
 [Service]

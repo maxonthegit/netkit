@@ -20,7 +20,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Run startup scripts
+Description=(Netkit) Startup scripts
 DefaultDependencies=no
 Conflicts=shutdown.target
 Conflicts=halt.target
@@ -36,10 +36,10 @@ ConditionKernelCommandLine=|hostlab
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/startup-scripts.sh
+ExecStop=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/shutdown-scripts.sh
 StandardOutput=tty
 StandardError=tty
 StandardInput=tty
-TTYPath=/dev/tty
 
 [Install]
 WantedBy=basic.target

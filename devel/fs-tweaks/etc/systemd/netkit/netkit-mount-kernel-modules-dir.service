@@ -20,7 +20,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Mount kernel modules directory
+Description=(Netkit) Mount kernel modules directory
 DefaultDependencies=no
 Conflicts=shutdown.target
 Conflicts=halt.target

@@ -20,7 +20,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Auto-configure network interfaces
+Description=(Netkit) Auto-configuration of network interfaces
 DefaultDependencies=no
 Conflicts=shutdown.target
 Conflicts=halt.target

@@ -20,7 +20,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [Unit]
-Description=Run lab test scripts
+Description=(Netkit) Lab test scripts
 DefaultDependencies=no
 Conflicts=shutdown.target
 Conflicts=halt.target

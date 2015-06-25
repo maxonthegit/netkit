@@ -1,3 +1,9 @@
+# Use a virtual machine (as opposed to a container)
+sudo: true
+
+# Custom build script
 script:
+  - pwd; cd devel
   - pwd
+  - echo test
 

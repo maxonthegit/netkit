@@ -1,6 +1,12 @@
 # Use a virtual machine (as opposed to a container)
 sudo: true
 
+# Install dependencies
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install gcc-multilib debootstrap fakeroot dpkg-dev
+  - sudo chmod a+rw /dev/loop*
+
 # Custom build script
 script:
   - pwd; cd devel

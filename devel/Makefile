@@ -18,6 +18,7 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+SHELL=/bin/bash
 
 # Variable: TARGET_ARCH
 # Must be either "x86_64" or "i386", depending on the target architecture Netkit
@@ -195,20 +196,22 @@ filesystem64:
 
 TIMESTAMP:=$(shell date +%Y%m%d-%H%M%S)
 
-find_command=$(word 1,$(shell whereis -b $1 | tr ' ' '\n' | tail -n +2 | egrep --color "$1( |$$)"))
+find_command_actual=$(word 1,$(shell whereis -b $1 | tr ' ' '\n' | tail -n +2 | egrep --color=never "$1( |$$)"))
+check_not_empty=$(if $1,$1,$(error $2))
+find_command=$(call check_not_empty,$(call find_command_actual,$1),Command not found: $1)
 
 # The following assignemnts are used to mount the filesystem image using a
 # loopback device
-LOSETUP:=$(call find_command,losetup)
+LOSETUP=$(call find_command,losetup)
 LOOP_DEVICE=$(shell $(LOSETUP) -f)
 
 # The following assignment determines the filesystem type used inside the
 # Netkit filesystem image
 FILESYSTEM_TYPE:=ext4
-MKFS:=$(call find_command,mkfs)
+MKFS=$(call find_command,mkfs)
 
-DEBOOTSTRAP:=$(call find_command,debootstrap)
-FAKEROOT:=$(call find_command,fakeroot)
+DEBOOTSTRAP=$(call find_command,debootstrap)
+FAKEROOT=$(call find_command,fakeroot)
 
 ###########################################################
 #                Kernel-related targets
@@ -253,7 +256,7 @@ $(UNPACKED_KERNEL_DIR)/vmlinux: $(UNPACKED_KERNEL_DIR)/.config $(KERNEL_UNPACKED
 	$(call display_message,kernel,"Compiling kernel")
 # Apparently, using LDFLAGS=-L with the appropriate path does not seem to work
 # in the following line. This is why LIBRARY_PATH is used instead.
-	$(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) -Otarget CFLAGS=-I$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/include) LIBRARY_PATH=$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/lib) ARCH=um SUBARCH=$(TARGET_ARCH) all
+	$(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) CFLAGS=-I$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/include) LIBRARY_PATH=$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/lib) ARCH=um SUBARCH=$(TARGET_ARCH) all
 
 $(UNPACKED_KERNEL_DIR)/.config: $(UNPACKED_KERNEL_DIR)/.patched
 	$(call display_message,kernel,"Configuring kernel")

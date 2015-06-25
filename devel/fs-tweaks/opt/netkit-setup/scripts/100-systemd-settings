@@ -27,7 +27,7 @@ systemctl set-default multi-user
 
 becho "Enabling boot-time Netkit-specific scripts in virtual machines"
 for SERVICE in /etc/systemd/netkit/netkit-*; do
-   if [ "$SERVICE" != "netkit-setup.service" ]; then
+   if [ "$SERVICE" != "/etc/systemd/netkit/netkit-setup.service" ]; then
       systemctl enable $SERVICE
    fi
 done

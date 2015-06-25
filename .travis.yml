@@ -5,9 +5,15 @@ sudo: true
 install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq gcc-multilib debootstrap fakeroot dpkg-dev
-  - sudo MAKEDEV std
-  - ls /dev/
-  - sudo chmod a+rw /dev/loop0
+  - sudo mknod /dev/loop0 b 7 0
+  - sudo mknod /dev/loop1 b 7 1
+  - sudo mknod /dev/loop2 b 7 2
+  - sudo mknod /dev/loop3 b 7 3
+  - sudo mknod /dev/loop4 b 7 4
+  - sudo mknod /dev/loop5 b 7 5
+  - sudo mknod /dev/loop6 b 7 6
+  - sudo mknod /dev/loop7 b 7 7
+  - sudo chmod a+rw /dev/loop*
 
 # Custom build script
 script:

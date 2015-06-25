@@ -30,8 +30,8 @@ EXEC=$(for KERNEL_PARAMETER in "$@"; do
    echo $KERNEL_PARAMETER
 done | awk -F= '($1=="exec") {print $2}')
 
-BOLD=$'\e[1;34m'
-NORMAL=$'\e[0m'
+BOLD=$'\033[1;34m'
+NORMAL=$'\033[0m'
 
 if [ -f /hostlab/$HOSTNAME.shutdown ]; then
    echo "${BOLD}===== Running $HOSTNAME-specific shutdown script =====${NORMAL}"

@@ -32,13 +32,13 @@ done | awk -F= '($1=="exec") {print $2}')
 
 HOSTLAB=$(cat /proc/mounts | grep /hostlab | awk '{print $4}' | awk -F, '{print $NF}')
 
-BOLD=$'\e[1;34m'
-NORMAL=$'\e[0m'
+BOLD=$'\033[1;34m'
+NORMAL=$'\033[0m'
 
 if [ -f /hostlab/lab.conf ]; then
-   echo -ne "${BOLD}"
+   echo -n "${BOLD}"
    sed -n '/^LAB_BANNER_START[ \t]*$/,/^LAB_BANNER_END[ \t]*$/p' /hostlab/lab.conf
-   echo -ne "${NORMAL}"
+   echo -n "${NORMAL}"
 
    eval $(grep -E "^[ \t]+(LAB_VERSION)|(LAB_AUTHOR)|(LAB_EMAIL)|(LAB_WEB)|(LAB_DESCRIPTION)[ \t]+=" /hostlab/lab.conf)
 
@@ -48,12 +48,13 @@ if [ -f /hostlab/lab.conf ]; then
    if [ -n "$LAB_AUTHOR" ]; then
       echo -n "${BOLD}Author${NORMAL}: $LAB_AUTHOR"
       if [ -n "$LAB_EMAIL" ]; then
-         echo " ($LAB_EMAIL)"
+         echo " ${BOLD}(${NORMAL}$LAB_EMAIL${BOLD})${NORMAL}"
       else
          echo
       fi
    else
-   [ -n "$LAB_EMAIL" ] && echo "${BOLD}Email${NORMAL}:     $LAB_EMAIL"
+      [ -n "$LAB_EMAIL" ] && echo "${BOLD}Email${NORMAL}:     $LAB_EMAIL"
+   fi
    [ -n "$LAB_WEB" ] && echo "${BOLD}Link${NORMAL}:         $LAB_WEB"
    if [ -n "$LAB_DESCRIPTION" ]; then
       echo "${BOLD}Description${NORMAL}:"
@@ -63,7 +64,7 @@ if [ -f /hostlab/lab.conf ]; then
 fi
 
 if [ -f /hostlab/shared.startup ]; then
-   echo -e "${BOLD}===== Running shared startup script =====${NORMAL}"
+   echo "${BOLD}===== Running shared startup script =====${NORMAL}"
    /bin/sh -c 'source /hostlab/shared.startup'
    echo "${BOLD}^^^^^ End of shared startup script  ^^^^^${NORMAL}"
 fi

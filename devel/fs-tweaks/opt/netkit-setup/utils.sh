@@ -20,8 +20,18 @@
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+if type source >/dev/null 2>&1; then
+   # We are using bash
+   EMPH=$'\033[35;1m'
+   NORMAL=$'\033[0m'
+else
+   # We are using dash
+   EMPH='\033[35;1m'
+   NORMAL='\033[0m'
+fi
+
 becho() {
-   echo "\033[35;1m$*\033[0m"
+   echo "${EMPH}$*${NORMAL}"
 }
 
 # Exit if any commands fail

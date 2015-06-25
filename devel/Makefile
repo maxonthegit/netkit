@@ -196,15 +196,15 @@ filesystem64:
 
 TIMESTAMP:=$(shell date +%Y%m%d-%H%M%S)
 
-check_not_empty=$(if $(1),$(1),$(2))
+check_not_empty=$(if $(1),$(1),$(error $(2)))
 
 find_command_actual=$(word 1,$(shell whereis -b $(1) | tr ' ' '\n' | tail -n +2 | egrep --color=never "$(1)( |$$)"))
-find_command=$(call check_not_empty,$(call find_command_actual,$(1)),$(error Command not found: $(1)))
+find_command=$(call check_not_empty,$(call find_command_actual,$(1)),Command not found: $(1))
 
 # The following assignemnts are used to mount the filesystem image using a
 # loopback device
 LOSETUP=$(call find_command,losetup)
-LOOP_DEVICE=$(call check_not_empty,$(shell $(LOSETUP) -f),$(error Not enough permissions to access loop devices))
+LOOP_DEVICE=$(call check_not_empty,$(shell $(LOSETUP) -f),Not enough permissions to access loop devices)
 
 # The following assignment determines the filesystem type used inside the
 # Netkit filesystem image
@@ -241,9 +241,6 @@ KERNEL_TARGET_FILE_NAME=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
 # Sample value for KERNEL_TARGET_FILE_NAME: netkit-kernel-3.19.3-x86_64
 KERNEL_TARGET_MODULES_DIR:=$(NETKIT_HOME)/kernel/modules-$(TARGET_ARCH)
 # Sample value for KERNEL_TARGET_MODULES_DIR: netkit/kernel/modules-x86_64
-
-def:
-	echo $(KERNEL_VERSION_NUMBER)
 
 kernel: $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep
 

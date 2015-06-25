@@ -4,12 +4,14 @@ sudo: true
 # Install dependencies
 install:
   - sudo apt-get update -qq
-  - sudo apt-get install gcc-multilib debootstrap fakeroot dpkg-dev
+  - sudo apt-get install -qq gcc-multilib debootstrap fakeroot dpkg-dev
   - sudo chmod a+rw /dev/loop*
 
 # Custom build script
 script:
-  - pwd; cd devel
-  - pwd
-  - echo test
+  - cd devel
+  - make kernel64
+  - make kernel32
+  - make filesystem64
+  - make filesystem32
 

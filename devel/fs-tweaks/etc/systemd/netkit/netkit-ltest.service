@@ -26,7 +26,7 @@ Conflicts=shutdown.target
 Conflicts=halt.target
 Conflicts=reboot.target
 Before=systemd-user-sessions.service
-After=systemd-remount-fs.service
+After=netkit-vm-config-complete.service
 ConditionKernelCommandLine=test
 
 [Service]

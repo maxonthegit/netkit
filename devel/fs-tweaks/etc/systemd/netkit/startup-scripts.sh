@@ -30,8 +30,37 @@ EXEC=$(for KERNEL_PARAMETER in "$@"; do
    echo $KERNEL_PARAMETER
 done | awk -F= '($1=="exec") {print $2}')
 
+HOSTLAB=$(cat /proc/mounts | grep /hostlab | awk '{print $4}' | awk -F, '{print $NF}')
+
 BOLD=$'\e[1;34m'
 NORMAL=$'\e[0m'
+
+if [ -f /hostlab/lab.conf ]; then
+   echo -ne "${BOLD}"
+   sed -n '/^LAB_BANNER_START[ \t]*$/,/^LAB_BANNER_END[ \t]*$/p' /hostlab/lab.conf
+   echo -ne "${NORMAL}"
+
+   eval $(grep -E "^[ \t]+(LAB_VERSION)|(LAB_AUTHOR)|(LAB_EMAIL)|(LAB_WEB)|(LAB_DESCRIPTION)[ \t]+=" /hostlab/lab.conf)
+
+   echo "${BOLD}########  Netkit lab  ########${NORMAL}"
+   echo "${BOLD}Directory${NORMAL}: ${HOSTLAB}"
+   [ -n "$LAB_VERSION" ] && echo "${BOLD}Version${NORMAL}:   $LAB_VERSION"
+   if [ -n "$LAB_AUTHOR" ]; then
+      echo -n "${BOLD}Author${NORMAL}: $LAB_AUTHOR"
+      if [ -n "$LAB_EMAIL" ]; then
+         echo " ($LAB_EMAIL)"
+      else
+         echo
+      fi
+   else
+   [ -n "$LAB_EMAIL" ] && echo "${BOLD}Email${NORMAL}:     $LAB_EMAIL"
+   [ -n "$LAB_WEB" ] && echo "${BOLD}Link${NORMAL}:         $LAB_WEB"
+   if [ -n "$LAB_DESCRIPTION" ]; then
+      echo "${BOLD}Description${NORMAL}:"
+      echo "$LAB_DESCRIPTION"
+   fi
+   echo "${BOLD}##############################${NORMAL}"
+fi
 
 if [ -f /hostlab/shared.startup ]; then
    echo -e "${BOLD}===== Running shared startup script =====${NORMAL}"

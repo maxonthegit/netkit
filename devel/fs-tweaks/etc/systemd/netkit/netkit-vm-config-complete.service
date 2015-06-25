@@ -39,7 +39,7 @@ ConditionPathExists=!/etc/vhostconfigured
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/etc/systemd/netkit/config-complete.sh
+ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/config-complete.sh
 
 [Install]
 WantedBy=basic.target

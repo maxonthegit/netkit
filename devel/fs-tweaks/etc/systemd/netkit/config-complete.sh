@@ -42,3 +42,8 @@ if [ "$IS_COW" == "1" ]; then
    touch /etc/vhostconfigured
 fi
 
+# Notify VM startup completion if this is a lab
+if mountpoint -q /hostlab; then
+   touch /hostlab/${HOSTNAME}.ready
+fi
+

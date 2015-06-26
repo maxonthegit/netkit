@@ -14,4 +14,8 @@ script:
   - make kernel32
   - make filesystem64
   - make filesystem32
+  - sudo make filesystem64
+  - sudo make filesystem32
+  - make filesystem64 STAGE=2
+  - make filesystem32 STAGE=2
 

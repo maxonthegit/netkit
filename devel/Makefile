@@ -235,11 +235,12 @@ KERNEL_VERSION_NUMBER=$(if $(wildcard $(UNPACKED_KERNEL_DIR)),$(shell make -s -C
 # is not reliable. For example, the package for kernel 4.0.0 is labelled with version number 4.0.
 # Also, KERNEL_VERSION_NUMBER and KERNEL_TARGET_FILE_NAME cannot be simply expanded variables
 # (i.e., assigned with `:='), because the kernel directory may not exist yet at this stage.
+# The same applies to KERNEL_TARGET_MODULES_DIR.
 KERNEL_TARGET_DIR:=$(NETKIT_HOME)/kernel
 # Sample value for KERNEL_TARGET_DIR: netkit/kernel
 KERNEL_TARGET_FILE_NAME=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
 # Sample value for KERNEL_TARGET_FILE_NAME: netkit-kernel-3.19.3-x86_64
-KERNEL_TARGET_MODULES_DIR:=$(NETKIT_HOME)/kernel/modules-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
+KERNEL_TARGET_MODULES_DIR=$(NETKIT_HOME)/kernel/modules-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
 # Sample value for KERNEL_TARGET_MODULES_DIR: netkit/kernel/modules-4.0.0-x86_64
 
 kernel: $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep
@@ -381,7 +382,7 @@ else    # ifneq ($(shell whoami),root)
 ## filesystem mount directory, we need to touch the latter
 	$(call display_message,filesystem,"Creating filesystem image")
 	virt-make-fs --format=raw --size=$(FILESYSTEM_IMAGE_SIZE) --type=$(FILESYSTEM_TYPE) $(FILESYSTEM_MOUNT_DIR) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-   chmod a+rw $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+	chmod a+rw $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 #	touch $(FILESYSTEM_MOUNT_DIR)
 endif
 

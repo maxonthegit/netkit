@@ -239,8 +239,8 @@ KERNEL_TARGET_DIR:=$(NETKIT_HOME)/kernel
 # Sample value for KERNEL_TARGET_DIR: netkit/kernel
 KERNEL_TARGET_FILE_NAME=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
 # Sample value for KERNEL_TARGET_FILE_NAME: netkit-kernel-3.19.3-x86_64
-KERNEL_TARGET_MODULES_DIR:=$(NETKIT_HOME)/kernel/modules-$(TARGET_ARCH)
-# Sample value for KERNEL_TARGET_MODULES_DIR: netkit/kernel/modules-x86_64
+KERNEL_TARGET_MODULES_DIR:=$(NETKIT_HOME)/kernel/modules-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
+# Sample value for KERNEL_TARGET_MODULES_DIR: netkit/kernel/modules-4.0.0-x86_64
 
 kernel: $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep
 
@@ -349,12 +349,12 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 	$(call display_message,filesystem,"Saving list of packages")
 	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
-.filesystem-setup-complete: $(FILESYSTEM_MOUNT_DIR) slirp
+.filesystem-setup-complete: $(FILESYSTEM_MOUNT_DIR) slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
 	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
 	[ ! -f /tmp/.netkit-setup-running ]
 
-$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
+$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR) $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
 # This is the only phase that unavoidably requires root privileges (note:
 # working with fakeroot and fakechroot does not produce a working filesystem
 # image, at the very least because file ownerships are only simulated and not
@@ -362,25 +362,24 @@ $(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FI
 ifneq ($(shell whoami),root)
 	$(call display_message,filesystem,"Please re-invoke the Makefile as root on the same target\(s\): $(MAKECMDGOALS).")
 else    # ifneq ($(shell whoami),root)
-	$(call display_message,filesystem,"Mounting filesystem image and installing base packages")
+	$(call display_message,filesystem,"Installing base packages in the filesystem image")
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)
-# The following command succeeds both if the filesystem is correctly mounted
-# (mount return success) and if the filesystem was already mounted (mount fails,
-# but mountpoint returns success), which may for example be the case if the
-# Makefile was previously interrupted.
-	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
+## The following command succeeds both if the filesystem is correctly mounted
+## (mount return success) and if the filesystem was already mounted (mount fails,
+## but mountpoint returns success), which may for example be the case if the
+## Makefile was previously interrupted.
+#	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
 	$(DEBOOTSTRAP) --unpack-tarball=$(realpath $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz) --arch=$(TARGET_FS_ARCH) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
 # Prepare a list of APT sources based on the official list of primary Debian mirrors
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
 	wget --no-verbose -O - "http://ftp.it.debian.org/debian/README.mirrors.txt" | sed -n '/Primary/,/Secondary/p' | awk '/i386/ {split(substr($$0,match($$0,/ftp/)),a); print "# deb http://" a[1] a[2] " $(DEBIAN_RELEASE) main contrib non-free"}' | sed '/ftp\.it/ s/^# //' > $(FILESYSTEM_MOUNT_DIR)/etc/apt/sources.list
 	cp -rd $(FILESYSTEM_TWEAKS_DIR)/* $(FILESYSTEM_MOUNT_DIR)
 	cp $(FILESYSTEM_PACKAGES_DEBCONF) $(FILESYSTEM_MOUNT_DIR)
-# Enable the Netkit setup service
 	ln -s /etc/systemd/netkit/netkit-setup.service $(FILESYSTEM_MOUNT_DIR)/etc/systemd/system/multi-user.target.wants
-	umount $(FILESYSTEM_MOUNT_DIR)
-# Since the filesystem image has now been more recently updated than the
-# filesystem mount directory, we need to touch the latter
-	touch $(FILESYSTEM_MOUNT_DIR)
+#	umount $(FILESYSTEM_MOUNT_DIR)
+## Since the filesystem image has now been more recently updated than the
+## filesystem mount directory, we need to touch the latter
+#	touch $(FILESYSTEM_MOUNT_DIR)
 endif
 
 slirp:
@@ -402,13 +401,17 @@ $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz:
 	rm -fr $(FILESYSTEM_MOUNT_DIR)
 	ln -fs $(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
 
-$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
-	$(call display_message,filesystem,"Creating empty filesystem")
+$(FILESYSTEM_BUILD_DIR):
 	mkdir -p $(FILESYSTEM_BUILD_DIR)
-	dd if=/dev/zero of=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img bs=1 count=0 seek=$(FILESYSTEM_IMAGE_SIZE)
-	$(LOSETUP) $(LOOP_DEVICE) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-	$(MKFS) -L "Netkit FS" -t $(FILESYSTEM_TYPE) $(LOOP_DEVICE)
-	$(LOSETUP) -d $(LOOP_DEVICE)
+
+$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img: $(FILESYSTEM_BUILD_DIR)
+	$(call display_message,filesystem,"Creating filesystem image")
+	virt-make-fs --format=raw --label=Netkit_FS --size=$(FILESYSTEM_IMAGE_SIZE) --type=$(FILESYSTEM_TYPE) $(FILESYSTEM_MOUNT_DIR) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+#	$(call display_message,filesystem,"Creating empty filesystem")
+#	dd if=/dev/zero of=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img bs=1 count=0 seek=$(FILESYSTEM_IMAGE_SIZE)
+#	$(LOSETUP) $(LOOP_DEVICE) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+#	$(MKFS) -L "Netkit FS" -t $(FILESYSTEM_TYPE) $(LOOP_DEVICE)
+#	$(LOSETUP) -d $(LOOP_DEVICE)
 
 ##############################################################################
 ##############################################################################

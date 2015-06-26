@@ -1,4 +1,5 @@
 kernel-build-*
 fs-build-*
 linux-*
+slirp
 

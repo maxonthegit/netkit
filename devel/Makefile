@@ -349,12 +349,12 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 	$(call display_message,filesystem,"Saving list of packages")
 	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
-.filesystem-setup-complete: $(FILESYSTEM_MOUNT_DIR) slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+.filesystem-setup-complete: slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
 	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
 	[ ! -f /tmp/.netkit-setup-running ]
 
-$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR) $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
+$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img: $(FILESYSTEM_BUILD_DIR) $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
 # This is the only phase that unavoidably requires root privileges (note:
 # working with fakeroot and fakechroot does not produce a working filesystem
 # image, at the very least because file ownerships are only simulated and not
@@ -379,6 +379,9 @@ else    # ifneq ($(shell whoami),root)
 #	umount $(FILESYSTEM_MOUNT_DIR)
 ## Since the filesystem image has now been more recently updated than the
 ## filesystem mount directory, we need to touch the latter
+	$(call display_message,filesystem,"Creating filesystem image")
+	virt-make-fs --format=raw --size=$(FILESYSTEM_IMAGE_SIZE) --type=$(FILESYSTEM_TYPE) $(FILESYSTEM_MOUNT_DIR) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+   chmod a+rw $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 #	touch $(FILESYSTEM_MOUNT_DIR)
 endif
 
@@ -404,9 +407,7 @@ $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz:
 $(FILESYSTEM_BUILD_DIR):
 	mkdir -p $(FILESYSTEM_BUILD_DIR)
 
-$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img: $(FILESYSTEM_BUILD_DIR)
-	$(call display_message,filesystem,"Creating filesystem image")
-	virt-make-fs --format=raw --label=Netkit_FS --size=$(FILESYSTEM_IMAGE_SIZE) --type=$(FILESYSTEM_TYPE) $(FILESYSTEM_MOUNT_DIR) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+#$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img: $(FILESYSTEM_BUILD_DIR)
 #	$(call display_message,filesystem,"Creating empty filesystem")
 #	dd if=/dev/zero of=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img bs=1 count=0 seek=$(FILESYSTEM_IMAGE_SIZE)
 #	$(LOSETUP) $(LOOP_DEVICE) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img

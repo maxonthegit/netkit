@@ -28,6 +28,7 @@ Conflicts=reboot.target
 After=systemd-remount-fs.service
 Before=systemd-user-sessions.service
 Before=netkit-get-vm-files.service
+Before=netkit-ltest.service
 ConditionKernelCommandLine=name
 ConditionPathExists=!/etc/vhostconfigured
 

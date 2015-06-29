@@ -28,11 +28,12 @@ Conflicts=reboot.target
 After=systemd-remount-fs.service
 Before=netkit-get-vm-files.service
 Before=systemd-user-sessions.service
+Before=netkit-ltest.service
 ConditionKernelCommandLine=|hosthome
 ConditionKernelCommandLine=|hostlab
 
 [Service]
-Type=oneshot
+Type=simple
 RemainAfterExit=yes
 ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/mount-host-dirs.sh
 

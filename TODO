@@ -15,11 +15,14 @@
 
 === Filesystem ===
 
-- Netkit-specific scripts miss LSB tags and overrides
-- Test lab-related scripts (especially the banner)
-- Add ltest-related script
+- Test lab-related scripts (including the banner)
 
 - pgset (packet generator) => found at http://lxr.free-electrons.com/source/Documentation/networking/pktgen.txt?v=2.4.37#L49
-- Install FlowVisor
-- Install sFlow
-- Install git version of Open vSwitch?
+- Additional software pieces candidate for installation:
+  Lagopus
+  POX
+  FlowVisor
+  (sFlow)
+  Open vSwitch (git version)
+  Open vSwitch PKI
+

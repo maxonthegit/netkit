@@ -100,6 +100,9 @@ help:
 	@echo "   Build a user-mode Linux kernel to be used with Netkit. The kernel"
 	@echo "   source, as well as a few auxiliary header files, are automatically"
 	@echo "   downloaded; any applicable patches are also automatically applied."
+	@echo "   The generated kernel executable file, as well as the associated"
+	@echo "   kernel modules, will be put inside the kernel/ subdirectory in the"
+	@echo "   parent of this build directory tree."
 	@echo
 	@echo "filesystem"
 	@echo "   Build a Debian filesystem image to be used with Netkit. Any"
@@ -110,6 +113,8 @@ help:
 	@echo "   message will ask you to re-run the Makefile for the final stage."
 	@echo "   Note: a properly working Netkit kernel must be available in order"
 	@echo "   to be able to build the filesystem image."
+	@echo "   The generated filesystem image will be put inside the fs/"
+	@echo "   subdirectory in the parent of this build directory tree."
 	@echo
 	@echo "all"
 	@echo "   Build both the kernel and the filesystem."
@@ -128,13 +133,19 @@ help:
 	@echo "for 32-bit or 64-bit architectures, respectively. Using 'make kernel32'"
 	@echo "or 'make TARGET_ARCH=i386 kernel' is equivalent."
 	@echo
-	@echo "all-really"
+	@echo "everything"
 	@echo "   Build both the kernel and the filesystem, both for a 32-bit"
-	@echo "   architecture and for a 64-bit architecture."
-	@echo
+	@echo "   architecture and for a 64-bit architecture. This is a shortcut for"
+	@echo "   the typical 'build everything' pipeline:"
+	@echo "   make kernel32 kernel64 filesystem32 filesystem64 && \\"
+	@echo "   sudo make filesystem32 filesystem64 && \\"
+	@echo "   make filesystem32 filesystem64 STAGE=2"
+	@echo "   Users invoking this target should have adequate privileges"
+	@echo "   set up in the sudoers file."
+	@echo 
 	@echo "clean"
 	@echo "   A synonym for 'clean-kernel32 clean-kernel64 clean-filesystem32"
-	@echo "   clean-filesystem64'"
+	@echo "   clean-filesystem64'."
 	@echo
 	@echo "The following variables can be specified on the make command line in"
 	@echo "order to tune the build process:"
@@ -170,6 +181,9 @@ define display_message
 	@echo -e "\e[32;1m[$(1) $(TARGET_ARCH)]\e[0;1m $(2)\e[0m"
 endef
 
+# Disable built-in rules
+MAKEFLAGS+=-r
+
 # Following variables contain convenient paths and file names that are 
 # frequently used in the following. Their names should be self-explanatory.
 NETKIT_HOME:=$(PWD)/..
@@ -181,9 +195,11 @@ override CDPATH:=
 .PHONY: kernel kernel32 kernel64 filesystem filesystem32 filesystem64
 
 all: kernel filesystem
-all-really: kernel32 kernel64 filesystem32 filesystem64
 all32: kernel32 filesystem32
 all64: kernel64 filesystem64
+everything: kernel32 kernel64 filesystem32 filesystem64
+	sudo $(MAKE) filesystem32 filesystem64
+	$(MAKE) STAGE=2 filesystem32 filesystem64
 
 kernel32:
 	$(MAKE) TARGET_ARCH=i386 kernel
@@ -229,7 +245,21 @@ UNPACKED_KERNEL_DIR:=$(KERNEL_BUILD_DIR)/$(shell echo $(KERNEL_PACKAGE_FILE) | s
 # Sample value for UNPACKED_KERNEL_DIR: linux-3.19.3
 KERNEL_PATCHES_DIR:=kernel-patches
 # Sample value for KERNEL_PATCHES_DIR: kernel-patches
-KERNEL_VERSION_NUMBER=$(if $(wildcard $(UNPACKED_KERNEL_DIR)),$(shell make -s -C $(UNPACKED_KERNEL_DIR) kernelversion),)
+# The following line is the equivalent of the official
+# KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
+# in awk:
+KERNEL_VERSION_NUMBER=$(if $(wildcard $(UNPACKED_KERNEL_DIR)),$(shell awk ' \
+   {v[$$1]=$$3} \
+   END { \
+      printf v["VERSION"]; \
+      if ("PATCHLEVEL" in v) { \
+         if (v["PATCHLEVEL"] != "") {printf "." v["PATCHLEVEL"]} \
+      } \
+      if ("SUBLEVEL" in v) { \
+         if (v["SUBLEVEL"] != "") {printf "." v["SUBLEVEL"]} \
+      } \
+      print v["EXTRAVERSION"] \
+   }' $(UNPACKED_KERNEL_DIR)/Makefile ))
 # Sample value for KERNEL_VERSION_NUMBER: 3.19.3
 # Note: getting kernel version number from the package file (or uncompressed directory name)
 # is not reliable. For example, the package for kernel 4.0.0 is labelled with version number 4.0.
@@ -355,9 +385,7 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
 	[ ! -f /tmp/.netkit-setup-running ]
 
-$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-
-$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img: $(FILESYSTEM_BUILD_DIR) $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
+$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
 # This is the only phase that unavoidably requires root privileges (note:
 # working with fakeroot and fakechroot does not produce a working filesystem
 # image, at the very least because file ownerships are only simulated and not
@@ -367,11 +395,11 @@ ifneq ($(shell whoami),root)
 else    # ifneq ($(shell whoami),root)
 	$(call display_message,filesystem,"Installing base packages in the filesystem image")
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)
-## The following command succeeds both if the filesystem is correctly mounted
-## (mount return success) and if the filesystem was already mounted (mount fails,
-## but mountpoint returns success), which may for example be the case if the
-## Makefile was previously interrupted.
-#	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
+# The following command succeeds both if the filesystem is correctly mounted
+# (mount return success) and if the filesystem was already mounted (mount fails,
+# but mountpoint returns success), which may for example be the case if the
+# Makefile was previously interrupted.
+	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
 	$(DEBOOTSTRAP) --unpack-tarball=$(realpath $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz) --arch=$(TARGET_FS_ARCH) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
 # Prepare a list of APT sources based on the official list of primary Debian mirrors
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
@@ -379,13 +407,10 @@ else    # ifneq ($(shell whoami),root)
 	cp -rd $(FILESYSTEM_TWEAKS_DIR)/* $(FILESYSTEM_MOUNT_DIR)
 	cp $(FILESYSTEM_PACKAGES_DEBCONF) $(FILESYSTEM_MOUNT_DIR)
 	ln -s /etc/systemd/netkit/netkit-setup.service $(FILESYSTEM_MOUNT_DIR)/etc/systemd/system/multi-user.target.wants
-#	umount $(FILESYSTEM_MOUNT_DIR)
-## Since the filesystem image has now been more recently updated than the
-## filesystem mount directory, we need to touch the latter
-	$(call display_message,filesystem,"Creating filesystem image")
-	virt-make-fs --format=raw --size=$(FILESYSTEM_IMAGE_SIZE) --type=$(FILESYSTEM_TYPE) $(FILESYSTEM_MOUNT_DIR) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-	chmod a+rw $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-#	touch $(FILESYSTEM_MOUNT_DIR)
+	umount $(FILESYSTEM_MOUNT_DIR)
+# Since the filesystem image has now been more recently updated than the
+# filesystem mount directory, we need to touch the latter
+	touch $(FILESYSTEM_MOUNT_DIR)
 endif
 
 slirp:
@@ -407,15 +432,13 @@ $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz:
 	rm -fr $(FILESYSTEM_MOUNT_DIR)
 	ln -fs $(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
 
-$(FILESYSTEM_BUILD_DIR):
+$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
+	$(call display_message,filesystem,"Creating empty filesystem")
 	mkdir -p $(FILESYSTEM_BUILD_DIR)
-
-#$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img: $(FILESYSTEM_BUILD_DIR)
-#	$(call display_message,filesystem,"Creating empty filesystem")
-#	dd if=/dev/zero of=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img bs=1 count=0 seek=$(FILESYSTEM_IMAGE_SIZE)
-#	$(LOSETUP) $(LOOP_DEVICE) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-#	$(MKFS) -L "Netkit FS" -t $(FILESYSTEM_TYPE) $(LOOP_DEVICE)
-#	$(LOSETUP) -d $(LOOP_DEVICE)
+	dd if=/dev/zero of=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img bs=1 count=0 seek=$(FILESYSTEM_IMAGE_SIZE)
+	$(LOSETUP) $(LOOP_DEVICE) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+	$(MKFS) -L "Netkit FS" -t $(FILESYSTEM_TYPE) $(LOOP_DEVICE)
+	$(LOSETUP) -d $(LOOP_DEVICE)
 
 ##############################################################################
 ##############################################################################

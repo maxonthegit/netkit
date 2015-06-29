@@ -25,16 +25,25 @@ DefaultDependencies=no
 Conflicts=shutdown.target
 Conflicts=halt.target
 Conflicts=reboot.target
-Before=systemd-user-sessions.service
+After=netkit-get-vm-files.service
+After=netkit-hostname.service
+After=netkit-mount-host-dirs.service
+After=netkit-mount-kernel-modules-dir.service
+After=networking.service
 After=netkit-vm-config-complete.service
+Before=multi-user.target
+Before=systemd-user-sessions.service
 ConditionKernelCommandLine=test
+OnFailure=halt.target
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+TimeoutStartSec=0
 ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/lab-test.sh
 StandardOutput=tty
 StandardError=tty
+TTYReset=yes
 
 [Install]
 WantedBy=basic.target

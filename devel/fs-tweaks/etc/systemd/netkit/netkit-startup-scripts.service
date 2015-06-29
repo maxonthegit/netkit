@@ -29,6 +29,7 @@ Before=systemd-user-sessions.service
 After=systemd-remount-fs.service
 After=netkit-autoconf-interfaces.service
 After=netkit-vm-config-complete.service
+Before=netkit-ltest.service
 ConditionKernelCommandLine=|exec
 ConditionKernelCommandLine=|hostlab
 

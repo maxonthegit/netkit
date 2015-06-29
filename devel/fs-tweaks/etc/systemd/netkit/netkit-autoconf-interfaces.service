@@ -26,6 +26,7 @@ Conflicts=shutdown.target
 Conflicts=halt.target
 Conflicts=reboot.target
 Before=systemd-user-sessions.service
+Before=netkit-ltest.service
 After=systemd-remount-fs.service
 ConditionKernelCommandLine=|netkit.defroute
 ConditionKernelCommandLine=|netkit.ipaddr

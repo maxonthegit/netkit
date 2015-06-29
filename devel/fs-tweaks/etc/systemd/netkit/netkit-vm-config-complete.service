@@ -34,6 +34,7 @@ After=dbus.service
 After=dbus.socket
 After=systemd-udevd.service
 After=networking.service
+Before=netkit-ltest.service
 ConditionPathExists=!/etc/vhostconfigured
 
 [Service]

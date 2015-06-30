@@ -1,6 +1,7 @@
 === General ===
 
 - "pack" target in the Makefile
+- Document new targets (bintools, etc.)
 - License statements in all files
 - Allow simultaneously running labs with virtual machine having common names (?)
 - Accelerate lab shutdown (and, possibly, startup)

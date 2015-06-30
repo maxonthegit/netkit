@@ -1,0 +1,33 @@
+# Warning: this Makefile is only meant to be invoked from the main
+# Makefile.
+
+#     This Makefile is part of Netkit, a network emulation environment
+#     based on the integration of several existing pieces of software.
+#     For more information: http://www.netkit.org/
+#
+#     Copyright (C) 2015 Massimo Rimondini (rimondin@ing.uniroma3.it)
+#     Computer Networks Research Group, Roma Tre University
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, version 3 of the License.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+SLIRP_CFLAGS=-I. -DUSE_PPP -DUSE_MS_DNS -DFULL_BOLT
+
+$(TOOLS_ARCH_DIR)/slirp:
+	$(call display_message,filesystem,"Downloading and compiling the slirp tool \(required for virtual machine Internet connectivity\)")
+	mkdir -p $(TOOLS_BUILD_DIR)/slirp/
+	cd $(TOOLS_BUILD_DIR)/slirp/ && apt-get source slirp
+	cd $(TOOLS_BUILD_DIR)/slirp/slirp-*/src && ./configure && make -j $(shell nproc) CFLAGS="$(SLIRP_CFLAGS)" CC="gcc $(COMPILE_FLAGS)"
+	mkdir -p $(TOOLS_ARCH_DIR)
+	cp -fl $(TOOLS_BUILD_DIR)/slirp/slirp-*/src/slirp $(TOOLS_ARCH_DIR)
+	touch $(TOOLS_ARCH_DIR)/slirp
+

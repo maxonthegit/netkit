@@ -34,7 +34,6 @@ rm /netkit-fs-debconf
 cat <<EOF | sed 's/#.*$//' | grep -v "^ *$" | xargs apt-get install -y
 
 # SDN-related tools
-openvswitch-switch
 python-ryu
 ryu-bin
 

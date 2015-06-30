@@ -83,6 +83,13 @@ FILESYSTEM_IMAGE_SIZE?=20G
 # FILESYSTEM_BUILD_DIR:=fs-build
 FILESYSTEM_BUILD_DIR:=fs-build-$(TARGET_ARCH)
 
+# Variable: TOOLS_BUILD_DIR
+# Specifies the name of the directory where work files for building
+# command line tools will be kept. It is usually a relative path, but absolute
+# paths should work as well. Example:
+# TOOLS_BUILD_DIR:=bintools-build
+TOOLS_BUILD_DIR:=bintools-build-$(TARGET_ARCH)
+
 
 
 ##############################################################################
@@ -197,7 +204,7 @@ override CDPATH:=
 all: kernel filesystem
 all32: kernel32 filesystem32
 all64: kernel64 filesystem64
-everything: kernel32 kernel64 filesystem32 filesystem64
+everything: bintools32 bintools64 kernel32 kernel64 filesystem32 filesystem64
 	sudo $(MAKE) filesystem32 filesystem64
 	$(MAKE) STAGE=2 filesystem32 filesystem64
 
@@ -209,6 +216,16 @@ filesystem32:
 	$(MAKE) TARGET_ARCH=i386 filesystem
 filesystem64:
 	$(MAKE) TARGET_ARCH=x86_64 filesystem
+bintools32:
+	$(MAKE) TARGET_ARCH=i386 bintools
+bintools64:
+	$(MAKE) TARGET_ARCH=x86_64 bintools
+
+ifeq ($(TARGET_ARCH),i386)
+COMPILE_FLAGS=-m32
+else
+COMPILE_FLAGS=-m64
+endif
 
 TIMESTAMP:=$(shell date +%Y%m%d-%H%M%S)
 
@@ -230,220 +247,45 @@ MKFS=$(call find_command,mkfs)
 DEBOOTSTRAP=$(call find_command,debootstrap)
 FAKEROOT=$(call find_command,fakeroot)
 
-###########################################################
-#                Kernel-related targets
-###########################################################
+TOOLS_DIR:=$(NETKIT_HOME)/bin
+# Sample value for TOOLS_DIR: netkit/bin
 
-# Subdirectory where .deb packages will be unpacked
-KERNEL_UNPACKED_DEBS_DIR:=$(KERNEL_BUILD_DIR)/debs-unpacked
-
-# Beware: $(shell basename X) and $(basename X) behave differently, especially
-# when applied to URLs
-KERNEL_PACKAGE_FILE:=$(shell basename $(KERNEL_SOURCE_URL))
-# Sample value for KERNEL_PACKAGE_FILE: linux-3.19.3.tar.xz
-UNPACKED_KERNEL_DIR:=$(KERNEL_BUILD_DIR)/$(shell echo $(KERNEL_PACKAGE_FILE) | sed -r 's/(\.tar)?\.[^.]+$$//')
-# Sample value for UNPACKED_KERNEL_DIR: linux-3.19.3
-KERNEL_PATCHES_DIR:=kernel-patches
-# Sample value for KERNEL_PATCHES_DIR: kernel-patches
-# The following line is the equivalent of the official
-# KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
-# in awk:
-KERNEL_VERSION_NUMBER=$(if $(wildcard $(UNPACKED_KERNEL_DIR)),$(shell awk ' \
-   {v[$$1]=$$3} \
-   END { \
-      printf v["VERSION"]; \
-      if ("PATCHLEVEL" in v) { \
-         if (v["PATCHLEVEL"] != "") {printf "." v["PATCHLEVEL"]} \
-      } \
-      if ("SUBLEVEL" in v) { \
-         if (v["SUBLEVEL"] != "") {printf "." v["SUBLEVEL"]} \
-      } \
-      print v["EXTRAVERSION"] \
-   }' $(UNPACKED_KERNEL_DIR)/Makefile ))
-# Sample value for KERNEL_VERSION_NUMBER: 3.19.3
-# Note: getting kernel version number from the package file (or uncompressed directory name)
-# is not reliable. For example, the package for kernel 4.0.0 is labelled with version number 4.0.
-# Also, KERNEL_VERSION_NUMBER and KERNEL_TARGET_FILE_NAME cannot be simply expanded variables
-# (i.e., assigned with `:='), because the kernel directory may not exist yet at this stage.
-# The same applies to KERNEL_TARGET_MODULES_DIR.
-KERNEL_TARGET_DIR:=$(NETKIT_HOME)/kernel
-# Sample value for KERNEL_TARGET_DIR: netkit/kernel
-KERNEL_TARGET_FILE_NAME=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
-# Sample value for KERNEL_TARGET_FILE_NAME: netkit-kernel-3.19.3-x86_64
-KERNEL_TARGET_MODULES_DIR=$(NETKIT_HOME)/kernel/modules-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
-# Sample value for KERNEL_TARGET_MODULES_DIR: netkit/kernel/modules-4.0.0-x86_64
-
-kernel: $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep
-
-$(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME): $(UNPACKED_KERNEL_DIR)/vmlinux
-	$(call display_message,kernel,"Creating a hard link to the kernel in its default location and enabling it")
-	mkdir -p $(KERNEL_TARGET_DIR)
-	cp -fl $(UNPACKED_KERNEL_DIR)/vmlinux $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME)
-	ln -fs $(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_DIR)/netkit-kernel-$(TARGET_ARCH)
-
-$(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep: $(UNPACKED_KERNEL_DIR)/vmlinux
-	$(call display_message,kernel,"Moving kernel modules to an appropriate location")
-	mkdir -p $(KERNEL_TARGET_MODULES_DIR)
-	$(MAKE) -C $(UNPACKED_KERNEL_DIR) ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH=$(KERNEL_TARGET_MODULES_DIR) modules_install
-	rm -f $(KERNEL_TARGET_MODULES_DIR)/lib/modules/*/{build,source}
-# Make sure that the modules.dep file is newer than vmlinux (and do not create
-# a modules.dep file if none exists)
-	touch -c $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep
-
-$(UNPACKED_KERNEL_DIR)/vmlinux: $(UNPACKED_KERNEL_DIR)/.config $(KERNEL_UNPACKED_DEBS_DIR)/usr
-	$(call display_message,kernel,"Compiling kernel")
-# Apparently, using LDFLAGS=-L with the appropriate path does not seem to work
-# in the following line. This is why LIBRARY_PATH is used instead.
-	$(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) CFLAGS=-I$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/include) LIBRARY_PATH=$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/lib) ARCH=um SUBARCH=$(TARGET_ARCH) all
-
-$(UNPACKED_KERNEL_DIR)/.config: $(UNPACKED_KERNEL_DIR)/.patched
-	$(call display_message,kernel,"Configuring kernel")
-	cp $(NETKIT_KERNEL_CONFIG_FILE) $(UNPACKED_KERNEL_DIR)/.config
-	make -C $(UNPACKED_KERNEL_DIR) ARCH=um SUBARCH=$(TARGET_ARCH) silentoldconfig
-
-$(UNPACKED_KERNEL_DIR)/.patched: $(UNPACKED_KERNEL_DIR)/Makefile
-	$(call display_message,kernel,"Applying Netkit-specific kernel patches")
-	for DIFF_FILE in $(KERNEL_PATCHES_DIR)/*.diff; do patch -p1 -d $(UNPACKED_KERNEL_DIR) < $$DIFF_FILE; done
-	touch $(UNPACKED_KERNEL_DIR)/.patched
-
-$(UNPACKED_KERNEL_DIR)/Makefile: $(KERNEL_PACKAGE_FILE)
-	$(call display_message,kernel,"Unpacking kernel source package")
-	mkdir -p $(KERNEL_BUILD_DIR)
-	tar -xJC $(KERNEL_BUILD_DIR) -f $<
-# Make sure the Makefile is newer than the kernel package (and do not
-# create a Makefile if there is none)
-	touch -c $(UNPACKED_KERNEL_DIR)/Makefile
-
-$(KERNEL_PACKAGE_FILE):
-	$(call display_message,kernel,"Downloading kernel source package")
-# Here --no-use-server-timestamps is used in order to make sure that
-# the last changed date of the kernel package is the current time
-# (required for proper detection of prerequisite "freshness")
-	wget --progress=bar --no-use-server-timestamps $(KERNEL_SOURCE_URL)
-
-$(KERNEL_UNPACKED_DEBS_DIR)/usr:
-	$(call display_message,kernel,"Downloading and extracting support libraries required for kernel compilation")
-	mkdir -p $(KERNEL_UNPACKED_DEBS_DIR); rm -f $(KERNEL_BUILD_DIR)/*.deb
-	wget -P $(KERNEL_BUILD_DIR) --progress=bar $(HEADER_LIBRARY_DEBS_URL)
-	for DEB_FILE in $(KERNEL_BUILD_DIR)/*.deb; do dpkg-deb -x $$DEB_FILE $(KERNEL_UNPACKED_DEBS_DIR); done
-
-
-
-###########################################################
-#                Filesystem-related targets
-###########################################################
-
-# Temporary compressed file where base .deb packages for building the filesystem
-# image will be stored
-FILESYSTEM_BASEPACKAGES_ARCHIVE:=base-deb-packages-$(TARGET_ARCH)
-
-FILESYSTEM_TWEAKS_DIR:=fs-tweaks
-# Sample value for FILESYSTEM_TWEAKS_DIR: fs-tweaks
-FILESYSTEM_PACKAGES_DEBCONF:=netkit-fs-debconf
-# Sample value for FILESYSTEM_PACKAGES_DEBCONF: netkit-fs-debconf
-FILESYSTEM_PACKAGES_LIST_FROM_VM:=/tmp/netkit-package-list
-# Sample value for FILESYSTEM_PACKAGES_LIST_FROM_VM: /tmp/netkit-package-list
-
-FILESYSTEM_TARGET_DIR:=$(NETKIT_HOME)/fs
-# Sample value for FILESYSTEM_TARGET_DIR: netkit/fs
-FILESYSTEM_TARGET_FILE_NAME:=netkit-fs-$(DEBIAN_RELEASE)-$(TARGET_ARCH)
-# Sample value for FILESYSTEM_TARGET_FILE_NAME: netkit-fs-sid-x86_64
-FILESYSTEM_MOUNT_DIR:=$(FILESYSTEM_BUILD_DIR)/temp-fs-mount
-# Sample value for FILESYSTEM_MOUNT_DIR: fs-build-x86_64/temp-fs-mount
-
-
-# Architecture names are slightly different in Debian mirrors
-TARGET_FS_ARCH:=$(TARGET_ARCH)
-ifeq ($(TARGET_ARCH),x86_64)
-TARGET_FS_ARCH:=amd64
-endif
-
-
-# Isolate the steps in the build procedure that require root privileges to be
-# executed
-ifeq ($(shell whoami),root)
-filesystem: $(FILESYSTEM_MOUNT_DIR)
-	$(call display_message,filesystem,"You can now continue the build as a standard user: just reinvoke the Makefile on the same filesystem target\(s\) specifying STAGE=2.")
+ifeq ($(TARGET_ARCH),i386)
+TOOLS_ARCH_DIR:=$(NETKIT_HOME)/bin/32bit
 else
-ifeq ($(STAGE),2)
-filesystem: $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
-else
-filesystem: $(FILESYSTEM_MOUNT_DIR)
+TOOLS_ARCH_DIR:=$(NETKIT_HOME)/bin/64bit
 endif
-endif
+# Sample value for TOOLS_ARCH_DIR: netkit/bin/64bit
 
-$(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-complete
-	$(call display_message,filesystem,"Sparsifying filesystem image and moving it to its default location")
-	mkdir -p $(FILESYSTEM_TARGET_DIR)
-	cp --sparse=always -f $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
-	rm -f $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-	$(call display_message,filesystem,"Saving list of packages")
-	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
-.filesystem-setup-complete: slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
-	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath ./slirp) quiet systemd.show_status=1
-	[ ! -f /tmp/.netkit-setup-running ]
+###########################################################
+#                 Kernel-related targets
+###########################################################
 
-$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
-# This is the only phase that unavoidably requires root privileges (note:
-# working with fakeroot and fakechroot does not produce a working filesystem
-# image, at the very least because file ownerships are only simulated and not
-# really written to the filesystem).
-ifneq ($(shell whoami),root)
-	$(call display_message,filesystem,"Please re-invoke the Makefile as root on the same target\(s\): $(MAKECMDGOALS).")
-else    # ifneq ($(shell whoami),root)
-	$(call display_message,filesystem,"Installing base packages in the filesystem image")
-	mkdir -p $(FILESYSTEM_MOUNT_DIR)
-# The following command succeeds both if the filesystem is correctly mounted
-# (mount return success) and if the filesystem was already mounted (mount fails,
-# but mountpoint returns success), which may for example be the case if the
-# Makefile was previously interrupted.
-	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
-	$(DEBOOTSTRAP) --unpack-tarball=$(realpath $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz) --arch=$(TARGET_FS_ARCH) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
-# Prepare a list of APT sources based on the official list of primary Debian mirrors
-	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
-	wget --no-verbose -O - "http://ftp.it.debian.org/debian/README.mirrors.txt" | sed -n '/Primary/,/Secondary/p' | awk '/i386/ {split(substr($$0,match($$0,/ftp/)),a); print "# deb http://" a[1] a[2] " $(DEBIAN_RELEASE) main contrib non-free"}' | sed '/ftp\.it/ s/^# //' > $(FILESYSTEM_MOUNT_DIR)/etc/apt/sources.list
-	cp -rd $(FILESYSTEM_TWEAKS_DIR)/* $(FILESYSTEM_MOUNT_DIR)
-	cp $(FILESYSTEM_PACKAGES_DEBCONF) $(FILESYSTEM_MOUNT_DIR)
-	ln -s /etc/systemd/netkit/netkit-setup.service $(FILESYSTEM_MOUNT_DIR)/etc/systemd/system/multi-user.target.wants
-	umount $(FILESYSTEM_MOUNT_DIR)
-# Since the filesystem image has now been more recently updated than the
-# filesystem mount directory, we need to touch the latter
-	touch $(FILESYSTEM_MOUNT_DIR)
-endif
+include Makefile.kernel
 
-slirp:
-	$(call display_message,filesystem,"Downloading and compiling the slirp tool \(required for virtual machine Internet connectivity\)")
-	mkdir -p $(FILESYSTEM_BUILD_DIR)/slirp/
-	cd $(FILESYSTEM_BUILD_DIR)/slirp/ && apt-get source slirp
-# UML converts underscores in the slirp command line to spaces
-# (see http://ptgmedia.pearsoncmg.com/images/9780131865051/downloads/013865056_Dike_book.pdf)
-# Copying the slirp binary to the current directory reasonably ensures that the
-# path to reach it does not contain underscores.
-	cd $(FILESYSTEM_BUILD_DIR)/slirp/slirp-*/src && ./configure && make CFLAGS="-I. -DUSE_PPP -DUSE_MS_DNS -DFULL_BOLT"
-	cp -fl $(FILESYSTEM_BUILD_DIR)/slirp/slirp-*/src/slirp . && touch slirp
+###########################################################
+#               Filesystem-related targets
+###########################################################
 
-$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz:
-	$(call display_message,filesystem,"Downloading packages for minimal Debian installation")
-# Simply downloading .deb packages should not really require root privileges, so
-# we use fakeroot here
-	$(FAKEROOT) $(DEBOOTSTRAP) --download-only --arch=$(TARGET_FS_ARCH) --make-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
-	rm -fr $(FILESYSTEM_MOUNT_DIR)
-	ln -fs $(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
+include Makefile.filesystem
 
-$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
-	$(call display_message,filesystem,"Creating empty filesystem")
-	mkdir -p $(FILESYSTEM_BUILD_DIR)
-	dd if=/dev/zero of=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img bs=1 count=0 seek=$(FILESYSTEM_IMAGE_SIZE)
-	$(LOSETUP) $(LOOP_DEVICE) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-	$(MKFS) -L "Netkit FS" -t $(FILESYSTEM_TYPE) $(LOOP_DEVICE)
-	$(LOSETUP) -d $(LOOP_DEVICE)
+###########################################################
+#              Targets for command line tools
+###########################################################
+
+bintools: $(TOOLS_ARCH_DIR)/slirp
+
+include Makefile.slirp
+
 
 ##############################################################################
 ##############################################################################
 
-clean: clean-kernel32 clean-kernel64 clean-filesystem32 clean-filesystem64
+clean: clean-bintools32 clean-bintools64 clean-kernel32 clean-kernel64 clean-filesystem32 clean-filesystem64
+
+clean-bintools:
+	rm -fr $(TOOLS_BUILD_DIR)
 
 clean-kernel32:
 	$(MAKE) TARGET_ARCH=i386 clean-kernel
@@ -453,9 +295,8 @@ clean-filesystem32:
 	$(MAKE) TARGET_ARCH=i386 clean-filesystem
 clean-filesystem64:
 	$(MAKE) TARGET_ARCH=x86_64 clean-filesystem
-
-clean-kernel:
-	rm -fr $(KERNEL_BUILD_DIR) $(KERNEL_PACKAGE_FILE)
-clean-filesystem:
-	rm -fr $(FILESYSTEM_BUILD_DIR) slirp .filesystem-setup-complete
+clean-bintools32:
+	$(MAKE) TARGET_ARCH=i386 clean-bintools
+clean-bintools64:
+	$(MAKE) TARGET_ARCH=x86_64 clean-bintools
 

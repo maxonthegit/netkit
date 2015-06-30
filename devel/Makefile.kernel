@@ -1,0 +1,136 @@
+# Warning: this Makefile is only meant to be invoked from the main
+# Makefile.
+
+#     This Makefile is part of Netkit, a network emulation environment
+#     based on the integration of several existing pieces of software.
+#     For more information: http://www.netkit.org/
+#
+#     Copyright (C) 2015 Massimo Rimondini (rimondin@ing.uniroma3.it)
+#     Computer Networks Research Group, Roma Tre University
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, version 3 of the License.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+###########################################################
+#                  Variable assignments
+###########################################################
+
+# Subdirectory where .deb packages will be unpacked
+KERNEL_UNPACKED_DEBS_DIR:=$(KERNEL_BUILD_DIR)/debs-unpacked
+
+# Beware: $(shell basename X) and $(basename X) behave differently, especially
+# when applied to URLs
+KERNEL_PACKAGE_FILE:=$(shell basename $(KERNEL_SOURCE_URL))
+# Sample value for KERNEL_PACKAGE_FILE: linux-3.19.3.tar.xz
+
+UNPACKED_KERNEL_DIR:=$(KERNEL_BUILD_DIR)/$(shell echo $(KERNEL_PACKAGE_FILE) | sed -r 's/(\.tar)?\.[^.]+$$//')
+# Sample value for UNPACKED_KERNEL_DIR: linux-3.19.3
+
+KERNEL_PATCHES_DIR:=kernel-patches
+# Sample value for KERNEL_PATCHES_DIR: kernel-patches
+
+# The following assignment is the equivalent of the official
+# KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
+# in awk:
+KERNEL_VERSION_NUMBER=$(if $(wildcard $(UNPACKED_KERNEL_DIR)),$(shell awk ' \
+   {v[$$1]=$$3} \
+   END { \
+      printf v["VERSION"]; \
+      if ("PATCHLEVEL" in v) { \
+         if (v["PATCHLEVEL"] != "") {printf "." v["PATCHLEVEL"]} \
+      } \
+      if ("SUBLEVEL" in v) { \
+         if (v["SUBLEVEL"] != "") {printf "." v["SUBLEVEL"]} \
+      } \
+      print v["EXTRAVERSION"] \
+   }' $(UNPACKED_KERNEL_DIR)/Makefile ))
+# Sample value for KERNEL_VERSION_NUMBER: 3.19.3
+# Note: getting kernel version number from the package file (or uncompressed directory name)
+# is not reliable. For example, the package for kernel 4.0.0 is labelled with version number 4.0.
+# Also, KERNEL_VERSION_NUMBER and KERNEL_TARGET_FILE_NAME cannot be simply expanded variables
+# (i.e., assigned with `:='), because the kernel directory may not exist yet at this stage.
+# The same applies to KERNEL_TARGET_MODULES_DIR.
+
+KERNEL_TARGET_DIR:=$(NETKIT_HOME)/kernel
+# Sample value for KERNEL_TARGET_DIR: netkit/kernel
+
+KERNEL_TARGET_FILE_NAME=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
+# Sample value for KERNEL_TARGET_FILE_NAME: netkit-kernel-3.19.3-x86_64
+
+KERNEL_TARGET_MODULES_DIR=$(NETKIT_HOME)/kernel/modules-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
+# Sample value for KERNEL_TARGET_MODULES_DIR: netkit/kernel/modules-4.0.0-x86_64
+
+
+
+###########################################################
+#                  Kernel build targets
+###########################################################
+
+kernel: $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep
+
+$(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME): $(UNPACKED_KERNEL_DIR)/vmlinux
+	$(call display_message,kernel,"Creating a hard link to the kernel in its default location and enabling it")
+	mkdir -p $(KERNEL_TARGET_DIR)
+	cp -fl $(UNPACKED_KERNEL_DIR)/vmlinux $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_FILE_NAME)
+	ln -fs $(KERNEL_TARGET_FILE_NAME) $(KERNEL_TARGET_DIR)/netkit-kernel-$(TARGET_ARCH)
+
+$(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep: $(UNPACKED_KERNEL_DIR)/vmlinux
+	$(call display_message,kernel,"Moving kernel modules to an appropriate location")
+	mkdir -p $(KERNEL_TARGET_MODULES_DIR)
+	$(MAKE) -C $(UNPACKED_KERNEL_DIR) ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH=$(KERNEL_TARGET_MODULES_DIR) modules_install
+	rm -f $(KERNEL_TARGET_MODULES_DIR)/lib/modules/*/{build,source}
+# Make sure that the modules.dep file is newer than vmlinux (and do not create
+# a modules.dep file if none exists)
+	touch -c $(KERNEL_TARGET_MODULES_DIR)/lib/modules/$(KERNEL_VERSION_NUMBER)-netkit/modules.dep
+
+$(UNPACKED_KERNEL_DIR)/vmlinux: $(UNPACKED_KERNEL_DIR)/.config $(KERNEL_UNPACKED_DEBS_DIR)/usr
+	$(call display_message,kernel,"Compiling kernel")
+# Apparently, using LDFLAGS=-L with the appropriate path does not seem to work
+# in the following line. This is why LIBRARY_PATH is used instead.
+	$(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) CFLAGS="-I$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/include) $(COMPILE_FLAGS)" LIBRARY_PATH=$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/lib) ARCH=um SUBARCH=$(TARGET_ARCH) all
+
+$(UNPACKED_KERNEL_DIR)/.config: $(UNPACKED_KERNEL_DIR)/.patched
+	$(call display_message,kernel,"Configuring kernel")
+	cp $(NETKIT_KERNEL_CONFIG_FILE) $(UNPACKED_KERNEL_DIR)/.config
+	make -C $(UNPACKED_KERNEL_DIR) ARCH=um SUBARCH=$(TARGET_ARCH) silentoldconfig
+
+$(UNPACKED_KERNEL_DIR)/.patched: $(UNPACKED_KERNEL_DIR)/Makefile
+	$(call display_message,kernel,"Applying Netkit-specific kernel patches")
+	for DIFF_FILE in $(KERNEL_PATCHES_DIR)/*.diff; do patch -p1 -d $(UNPACKED_KERNEL_DIR) < $$DIFF_FILE; done
+	touch $(UNPACKED_KERNEL_DIR)/.patched
+
+$(UNPACKED_KERNEL_DIR)/Makefile: $(KERNEL_PACKAGE_FILE)
+	$(call display_message,kernel,"Unpacking kernel source package")
+	mkdir -p $(KERNEL_BUILD_DIR)
+	tar -xJC $(KERNEL_BUILD_DIR) -f $<
+# Make sure the Makefile is newer than the kernel package (and do not
+# create a Makefile if there is none)
+	touch -c $(UNPACKED_KERNEL_DIR)/Makefile
+
+$(KERNEL_PACKAGE_FILE):
+	$(call display_message,kernel,"Downloading kernel source package")
+# Here --no-use-server-timestamps is used in order to make sure that
+# the last changed date of the kernel package is the current time
+# (required for proper detection of prerequisite "freshness")
+	wget --progress=bar --no-use-server-timestamps $(KERNEL_SOURCE_URL)
+
+$(KERNEL_UNPACKED_DEBS_DIR)/usr:
+	$(call display_message,kernel,"Downloading and extracting support libraries required for kernel compilation")
+	mkdir -p $(KERNEL_UNPACKED_DEBS_DIR); rm -f $(KERNEL_BUILD_DIR)/*.deb
+	wget -P $(KERNEL_BUILD_DIR) --progress=bar $(HEADER_LIBRARY_DEBS_URL)
+	for DEB_FILE in $(KERNEL_BUILD_DIR)/*.deb; do dpkg-deb -x $$DEB_FILE $(KERNEL_UNPACKED_DEBS_DIR); done
+
+
+
+clean-kernel:
+	rm -fr $(KERNEL_BUILD_DIR) $(KERNEL_PACKAGE_FILE)
+

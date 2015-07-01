@@ -201,7 +201,7 @@ override CDPATH:=
 
 .PHONY: kernel kernel32 kernel64 filesystem filesystem32 filesystem64
 
-all: kernel filesystem
+all: bintools kernel filesystem
 all32: kernel32 filesystem32
 all64: kernel64 filesystem64
 everything: bintools32 bintools64 kernel32 kernel64 filesystem32 filesystem64
@@ -282,7 +282,9 @@ include Makefile.slirp
 ##############################################################################
 ##############################################################################
 
-clean: clean-bintools32 clean-bintools64 clean-kernel32 clean-kernel64 clean-filesystem32 clean-filesystem64
+clean: clean-bintools clean-kernel clean-filesystem
+
+clean-everything: clean-bintools32 clean-bintools64 clean-kernel32 clean-kernel64 clean-filesystem32 clean-filesystem64
 
 clean-bintools:
 	rm -fr $(TOOLS_BUILD_DIR)

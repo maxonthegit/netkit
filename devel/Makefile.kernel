@@ -96,7 +96,7 @@ $(UNPACKED_KERNEL_DIR)/vmlinux: $(UNPACKED_KERNEL_DIR)/.config $(KERNEL_UNPACKED
 	$(call display_message,kernel,"Compiling kernel")
 # Apparently, using LDFLAGS=-L with the appropriate path does not seem to work
 # in the following line. This is why LIBRARY_PATH is used instead.
-	$(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) CFLAGS="-I$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/include) $(COMPILE_FLAGS)" LIBRARY_PATH=$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/lib) ARCH=um SUBARCH=$(TARGET_ARCH) all
+	export HOST_EXTRACFLAGS="$(COMPILE_FLAGS)" HOSTLDFLAGS="$(COMPILE_FLAGS)" && $(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) CFLAGS="-I$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/include)" LIBRARY_PATH="$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/lib)" ARCH=um SUBARCH=$(TARGET_ARCH) all
 
 $(UNPACKED_KERNEL_DIR)/.config: $(UNPACKED_KERNEL_DIR)/.patched
 	$(call display_message,kernel,"Configuring kernel")

@@ -1,5 +1,6 @@
 kernel-build-*
 fs-build-*
 bintools-build-*
+ovs-build-*
 linux-*
 

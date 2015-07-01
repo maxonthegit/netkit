@@ -134,15 +134,18 @@ endef
 # Disable built-in rules
 MAKEFLAGS+=-r
 
-# Following variables contain convenient paths and file names that are 
-# frequently used in the following. Their names should be self-explanatory.
 NETKIT_HOME:=$(PWD)/..
 
 # Unset any value assigned to the CDPATH environment variable: they may cause
 # following 'cd' invocations to move to unexpected directories.
 override CDPATH:=
 
-.PHONY: kernel kernel32 kernel64 filesystem filesystem32 filesystem64
+# The following variable points to a directory that contains patches that must
+# be applied to software pieces other than the UML kernel.
+OTHER_PATCHES_DIR:=other-patches
+# Example value for OTHER_PATCHES_DIR: other-patches
+
+.PHONY: bintools bintools32 bintools64 kernel kernel32 kernel64 filesystem filesystem32 filesystem64
 
 all: bintools kernel filesystem
 all32: kernel32 filesystem32

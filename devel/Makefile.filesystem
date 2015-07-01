@@ -113,6 +113,8 @@ EXTERNAL_PACKAGES_TARGETS=openvswitch
 EXTERNAL_PACKAGES_INSTALL_TARGETS=$(foreach target,$(EXTERNAL_PACKAGES_TARGETS),$(target)-install)
 EXTERNAL_PACKAGES_CLEAN_TARGETS=$(foreach target,$(EXTERNAL_PACKAGES_TARGETS),clean-$(target))
 
+external-packages: $(EXTERNAL_PACKAGES_TARGETS)
+
 ###########################################################
 #                Filesystem-related targets
 ###########################################################

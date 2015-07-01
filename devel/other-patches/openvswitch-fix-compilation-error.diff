@@ -1,0 +1,42 @@
+===============================================================================
+
+This is a patch for Open vSwitch,
+
+This patch fixes a compilation error occurring when building Open vSwitch for
+the x86_64 target architecture. The error is due to the usage of the
+csum_ipv6_magic in file stt.c without a proper #include directive.
+
+===============================================================================
+
+     Copyright (C) 2015  Massimo Rimondini (rimondini@ing.uniroma3.it)
+     Computer Networks Research Group, Roma Tre University
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, version 3 of the License.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=================================================================================
+diff -Naurx .git ovs/datapath/linux/compat/stt.c ovs-patched/datapath/linux/compat/stt.c
+--- ovs/datapath/linux/compat/stt.c     2015-07-01 21:38:56.000000000 +0200
++++ ovs-patched/datapath/linux/compat/stt.c     2015-07-01 21:41:02.000000000 +0200
+@@ -27,6 +27,11 @@
+ #include <linux/tcp.h>
+ #include <linux/workqueue.h>
+ 
++/* The following include is required because of the usage of
++function csum_ipv6_magic.
++Omitting it causes errors on x86_64 builds. */
++#include <net/ip6_checksum.h>
++
+ #include <net/icmp.h>
+ #include <net/inet_ecn.h>
+ #include <net/ip.h>
+

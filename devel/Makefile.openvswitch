@@ -1,0 +1,47 @@
+# Warning: this Makefile is only meant to be invoked from the main
+# Makefile.
+
+#     This Makefile is part of Netkit, a network emulation environment
+#     based on the integration of several existing pieces of software.
+#     For more information: http://www.netkit.org/
+#
+#     Copyright (C) 2015 Massimo Rimondini (rimondin@ing.uniroma3.it)
+#     Computer Networks Research Group, Roma Tre University
+# 
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, version 3 of the License.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+OPENVSWITCH_GITHUB_URL:=https://github.com/openvswitch/ovs.git
+
+OPENVSWITCH_BUILD_DIR:=ovs-build-$(TARGET_ARCH)
+
+# SSL is apparently unsupported for 32 bit builds
+# (see also https://github.com/openvswitch/ovs/blob/master/.travis.yml)
+ifeq ($(TARGET_ARCH),i386)
+EXTRA_CONFIGURE_FLAGS=--disable-ssl
+endif
+
+openvswitch: $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
+	$(call display_message,openvswitch,"Building Open vSwitch")
+	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./boot.sh
+	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./configure --prefix="$(FILESYSTEM_MOUNT_DIR)" --with-linux="$(UNPACKED_KERNEL_DIR)" $(EXTRA_CONFIGURE_FLAGS)
+	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH)
+
+openvswitch-install: openvswitch $(FILESYSTEM_MOUNT_DIR)
+	$(call display_message,openvswitch,"Installing Open vSwitch")
+	$(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH="$(KERNEL_TARGET_MODULES_DIR)" install modules_install
+
+$(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh:
+	$(call display_message,openvswitch,"Cloning openvswitch repository")
+	cd $(OPENVSWITCH_BUILD_DIR) && git clone $(OPENVSWITCH_GITHUB_URL)
+

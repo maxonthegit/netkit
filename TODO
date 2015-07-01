@@ -7,6 +7,8 @@
 - Accelerate lab shutdown (and, possibly, startup)
 - systemd-specific kernel command line parameters (see the systemd man page):
   systemd.show_status=0
+- Document the fact that hostnames with underscores cannot be used (the hostname
+  invocation fails)
 
 === Kernel ===
 

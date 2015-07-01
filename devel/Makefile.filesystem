@@ -24,9 +24,59 @@
 #                   Variable assignments
 ###########################################################
 
+# Variable: FILESYSTEM_BUILD_DIR
+# Specifies the name of the directory where work files for building the
+# filesystem image will be kept. It is usually a relative path, but absolute
+# paths should work as well. Example:
+# FILESYSTEM_BUILD_DIR:=fs-build
+FILESYSTEM_BUILD_DIR:=fs-build-$(TARGET_ARCH)
+
+# Variable: FILESYSTEM_BASEPACKAGES_ARCHIVE
 # Temporary compressed file where base .deb packages for building the filesystem
 # image will be stored
 FILESYSTEM_BASEPACKAGES_ARCHIVE:=base-deb-packages-$(TARGET_ARCH)
+
+# Variable: DEBIAN_MIRROR
+# Base URL of the Debian mirror to be used when retrieving packages, without
+# final '/'. Example:
+# DEBIAN_MIRROR?=http://ftp.it.debian.org/debian
+DEBIAN_MIRROR?=http://ftp.it.debian.org/debian
+
+# Variable: HEADER_LIBRARY_DEBS_URL
+# Space-separated list of URLs pointing to .deb packages that contain header
+# files and libraries required to successfully compile the kernel. They will
+# *not* be actually installed, but just decompressed in order to retrieve the
+# required files. Different .deb packages may be required depending on the
+# target architecture Netkit is being built for. Example:
+# HEADER_LIBRARY_DEBS_URL=$(DEBIAN_MIRROR)/debian/pool/main/v/vde2/libvdeplug-dev_2.3.2+r586-2_amd64.deb
+ifeq ($(TARGET_ARCH),x86_64)
+HEADER_LIBRARY_DEBS_URL:=$(DEBIAN_MIRROR)/pool/main/v/vde2/libvdeplug-dev_2.3.2+r586-2_amd64.deb $(DEBIAN_MIRROR)/pool/main/libp/libpcap/libpcap0.8-dev_1.6.2-2_amd64.deb
+else
+HEADER_LIBRARY_DEBS_URL:=$(DEBIAN_MIRROR)/pool/main/v/vde2/libvdeplug-dev_2.3.2+r586-2_i386.deb $(DEBIAN_MIRROR)/pool/main/libp/libpcap/libpcap0.8-dev_1.6.2-2_i386.deb
+endif
+
+# Variable: DEBIAN_RELEASE
+# Specifies the name of the Debian release that should be installed in the
+# filesystem image. Available names can be found at
+# https://www.debian.org/releases/. Example:
+# DEBIAN_RELEASE?=sid
+DEBIAN_RELEASE?=sid
+
+# Variable: FILESYSTEM_IMAGE_SIZE
+# Specifies the amount of available space inside the filesystem image (since
+# it is created as a sparse file, this does not correspond to actual physical
+# disk space consumption). Suffixes such as K, M, and G, are supported. Example:
+# FILESYSTEM_IMAGE_SIZE?=20G
+FILESYSTEM_IMAGE_SIZE?=20G
+
+# The following assignment determines the filesystem type used inside the
+# Netkit filesystem image
+FILESYSTEM_TYPE:=ext4
+MKFS=$(call find_command,mkfs)
+DEBOOTSTRAP=$(call find_command,debootstrap)
+FAKEROOT=$(call find_command,fakeroot)
+
+
 
 FILESYSTEM_TWEAKS_DIR:=fs-tweaks
 # Sample value for FILESYSTEM_TWEAKS_DIR: fs-tweaks
@@ -53,6 +103,14 @@ TARGET_FS_ARCH:=amd64
 endif
 
 
+###########################################################
+#           Build targets for external packages
+###########################################################
+
+include Makefile.openvswitch
+
+EXTERNAL_PACKAGES_TARGETS=openvswitch
+EXTERNAL_PACKAGES_INSTALL_TARGETS=$(foreach target,$(EXTERNAL_PACKAGES_TARGETS),$(target)-install)
 
 ###########################################################
 #                Filesystem-related targets
@@ -86,8 +144,9 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 # (see http://ptgmedia.pearsoncmg.com/images/9780131865051/downloads/013865056_Dike_book.pdf)
 	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath $(TOOLS_ARCH_DIR)/slirp) quiet systemd.show_status=1
 	[ ! -f /tmp/.netkit-setup-running ]
+	touch .filesystem-setup-complete
 
-$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
+$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz external-packages
 # This is the only phase that unavoidably requires root privileges (note:
 # working with fakeroot and fakechroot does not produce a working filesystem
 # image, at the very least because file ownerships are only simulated and not
@@ -103,17 +162,21 @@ else    # ifneq ($(shell whoami),root)
 # Makefile was previously interrupted.
 	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
 	$(DEBOOTSTRAP) --unpack-tarball=$(realpath $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz) --arch=$(TARGET_FS_ARCH) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
+	$(call display_message,filesystem,"Performing additional tasks inside the filesystem image")
 # Prepare a list of APT sources based on the official list of primary Debian mirrors
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
 	wget --no-verbose -O - "http://ftp.it.debian.org/debian/README.mirrors.txt" | sed -n '/Primary/,/Secondary/p' | awk '/i386/ {split(substr($$0,match($$0,/ftp/)),a); print "# deb http://" a[1] a[2] " $(DEBIAN_RELEASE) main contrib non-free"}' | sed '/ftp\.it/ s/^# //' > $(FILESYSTEM_MOUNT_DIR)/etc/apt/sources.list
 	cp -rd $(FILESYSTEM_TWEAKS_DIR)/* $(FILESYSTEM_MOUNT_DIR)
 	cp $(FILESYSTEM_PACKAGES_DEBCONF) $(FILESYSTEM_MOUNT_DIR)
 	ln -fs /etc/systemd/netkit/netkit-setup.service $(FILESYSTEM_MOUNT_DIR)/etc/systemd/system/multi-user.target.wants
+	$(call display_message,filesystem,"Installing additional software pieces inside the filesystem image")
+	for ext_target in $(EXTERNAL_PACKAGES_INSTALL_TARGETS); do $(MAKE) $$ext_target; done
 	umount $(FILESYSTEM_MOUNT_DIR)
 # Since the filesystem image has now been more recently updated than the
 # filesystem mount directory, we need to touch the latter
 	touch $(FILESYSTEM_MOUNT_DIR)
 endif
+
 
 $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz:
 	$(call display_message,filesystem,"Downloading packages for minimal Debian installation")
@@ -127,12 +190,10 @@ $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
 	$(call display_message,filesystem,"Creating empty filesystem")
 	mkdir -p $(FILESYSTEM_BUILD_DIR)
 	dd if=/dev/zero of=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img bs=1 count=0 seek=$(FILESYSTEM_IMAGE_SIZE)
-	$(LOSETUP) $(LOOP_DEVICE) $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
-	$(MKFS) -L "Netkit FS" -t $(FILESYSTEM_TYPE) $(LOOP_DEVICE)
-	$(LOSETUP) -d $(LOOP_DEVICE)
+	$(MKFS) -L "Netkit FS" -t $(FILESYSTEM_TYPE) -F $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 
 
 
 clean-filesystem:
-	rm -fr $(FILESYSTEM_BUILD_DIR) .filesystem-setup-complete
+	rm -fr $(FILESYSTEM_BUILD_DIR) .filesystem-setup-complete $(OPENVSWITCH_BUILD_DIR)
 

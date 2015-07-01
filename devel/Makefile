@@ -26,63 +26,6 @@ SHELL=/bin/bash
 # TARGET_ARCH?=x86_64
 TARGET_ARCH?=$(shell arch)
 
-# Variable: DEBIAN_MIRROR
-# Base URL of the Debian mirror to be used when retrieving packages, without
-# final '/'. Example:
-# DEBIAN_MIRROR?=http://ftp.it.debian.org/debian
-DEBIAN_MIRROR?=http://ftp.it.debian.org/debian
-
-# Variable: KERNEL_SOURCE_URL
-# Specifies where to get the kernel source package from. Example:
-# KERNEL_SOURCE_URL?=https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.19.3.tar.xz
-KERNEL_SOURCE_URL?=https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.0.tar.xz
-
-# Variable: NETKIT_KERNEL_CONFIG_FILE
-# Specifies the name of the file containing the Netkit-specific kernel
-# configuration. Example:
-# NETKIT_KERNEL_CONFIG_FILE:=netkit-kernel-config-3.19.3-x86_64
-NETKIT_KERNEL_CONFIG_FILE:=$(wildcard netkit-kernel-config-*-$(TARGET_ARCH))
-
-# Variable: KERNEL_BUILD_DIR
-# Specifies the name of the directory where the kernel will be built. It is
-# usually a relative path, but absolute paths should work as well. Example:
-# KERNEL_BUILD_DIR:=kernel-build
-KERNEL_BUILD_DIR:=kernel-build-$(TARGET_ARCH)
-
-# Variable: HEADER_LIBRARY_DEBS_URL
-# Space-separated list of URLs pointing to .deb packages that contain header
-# files and libraries required to successfully compile the kernel. They will
-# *not* be actually installed, but just decompressed in order to retrieve the
-# required files. Different .deb packages may be required depending on the
-# target architecture Netkit is being built for. Example:
-# HEADER_LIBRARY_DEBS_URL=$(DEBIAN_MIRROR)/debian/pool/main/v/vde2/libvdeplug-dev_2.3.2+r586-2_amd64.deb
-ifeq ($(TARGET_ARCH),x86_64)
-HEADER_LIBRARY_DEBS_URL:=$(DEBIAN_MIRROR)/pool/main/v/vde2/libvdeplug-dev_2.3.2+r586-2_amd64.deb $(DEBIAN_MIRROR)/pool/main/libp/libpcap/libpcap0.8-dev_1.6.2-2_amd64.deb
-else
-HEADER_LIBRARY_DEBS_URL:=$(DEBIAN_MIRROR)/pool/main/v/vde2/libvdeplug-dev_2.3.2+r586-2_i386.deb $(DEBIAN_MIRROR)/pool/main/libp/libpcap/libpcap0.8-dev_1.6.2-2_i386.deb
-endif
-
-# Variable: DEBIAN_RELEASE
-# Specifies the name of the Debian release that should be installed in the
-# filesystem image. Available names can be found at
-# https://www.debian.org/releases/. Example:
-# DEBIAN_RELEASE?=sid
-DEBIAN_RELEASE?=sid
-
-# Variable: FILESYSTEM_IMAGE_SIZE
-# Specifies the amount of available space inside the filesystem image (since
-# it is created as a sparse file, this does not correspond to actual physical
-# disk space consumption). Suffixes such as K, M, and G, are supported. Example:
-# FILESYSTEM_IMAGE_SIZE?=20G
-FILESYSTEM_IMAGE_SIZE?=20G
-
-# Variable: FILESYSTEM_BUILD_DIR
-# Specifies the name of the directory where work files for building the
-# filesystem image will be kept. It is usually a relative path, but absolute
-# paths should work as well. Example:
-# FILESYSTEM_BUILD_DIR:=fs-build
-FILESYSTEM_BUILD_DIR:=fs-build-$(TARGET_ARCH)
-
 # Variable: TOOLS_BUILD_DIR
 # Specifies the name of the directory where work files for building
 # command line tools will be kept. It is usually a relative path, but absolute
@@ -239,13 +182,6 @@ find_command=$(call check_not_empty,$(call find_command_actual,$(1)),Command not
 LOSETUP=$(call find_command,losetup)
 LOOP_DEVICE=$(call check_not_empty,$(shell $(LOSETUP) -f),Not enough permissions to access loop devices)
 
-# The following assignment determines the filesystem type used inside the
-# Netkit filesystem image
-FILESYSTEM_TYPE:=ext4
-MKFS=$(call find_command,mkfs)
-
-DEBOOTSTRAP=$(call find_command,debootstrap)
-FAKEROOT=$(call find_command,fakeroot)
 
 TOOLS_DIR:=$(NETKIT_HOME)/bin
 # Sample value for TOOLS_DIR: netkit/bin

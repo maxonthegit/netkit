@@ -24,8 +24,28 @@
 #                  Variable assignments
 ###########################################################
 
+# Variable: KERNEL_SOURCE_URL
+# Specifies where to get the kernel source package from. Example:
+# KERNEL_SOURCE_URL?=https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.19.3.tar.xz
+KERNEL_SOURCE_URL?=https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.0.tar.xz
+
+# Variable: NETKIT_KERNEL_CONFIG_FILE
+# Specifies the name of the file containing the Netkit-specific kernel
+# configuration. Example:
+# NETKIT_KERNEL_CONFIG_FILE:=netkit-kernel-config-3.19.3-x86_64
+NETKIT_KERNEL_CONFIG_FILE:=$(wildcard netkit-kernel-config-*-$(TARGET_ARCH))
+
+# Variable: KERNEL_BUILD_DIR
+# Specifies the name of the directory where the kernel will be built. It is
+# usually a relative path, but absolute paths should work as well. Example:
+# KERNEL_BUILD_DIR:=kernel-build
+KERNEL_BUILD_DIR:=kernel-build-$(TARGET_ARCH)
+
+# Variable: KERNEL_UNPACKED_DEBS_DIR
 # Subdirectory where .deb packages will be unpacked
 KERNEL_UNPACKED_DEBS_DIR:=$(KERNEL_BUILD_DIR)/debs-unpacked
+
+
 
 # Beware: $(shell basename X) and $(basename X) behave differently, especially
 # when applied to URLs
@@ -96,12 +116,12 @@ $(UNPACKED_KERNEL_DIR)/vmlinux: $(UNPACKED_KERNEL_DIR)/.config $(KERNEL_UNPACKED
 	$(call display_message,kernel,"Compiling kernel")
 # Apparently, using LDFLAGS=-L with the appropriate path does not seem to work
 # in the following line. This is why LIBRARY_PATH is used instead.
-	export HOST_EXTRACFLAGS="$(COMPILE_FLAGS)" HOSTLDFLAGS="$(COMPILE_FLAGS)" && $(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) CFLAGS="-I$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/include)" LIBRARY_PATH="$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/lib)" ARCH=um SUBARCH=$(TARGET_ARCH) all
+	$(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) CFLAGS="-I$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/include)" LIBRARY_PATH="$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/lib)" ARCH=um SUBARCH=$(TARGET_ARCH) all
 
 $(UNPACKED_KERNEL_DIR)/.config: $(UNPACKED_KERNEL_DIR)/.patched
 	$(call display_message,kernel,"Configuring kernel")
 	cp $(NETKIT_KERNEL_CONFIG_FILE) $(UNPACKED_KERNEL_DIR)/.config
-	make -C $(UNPACKED_KERNEL_DIR) ARCH=um SUBARCH=$(TARGET_ARCH) silentoldconfig
+	$(MAKE) -C $(UNPACKED_KERNEL_DIR) ARCH=um SUBARCH=$(TARGET_ARCH) silentoldconfig
 
 $(UNPACKED_KERNEL_DIR)/.patched: $(UNPACKED_KERNEL_DIR)/Makefile
 	$(call display_message,kernel,"Applying Netkit-specific kernel patches")

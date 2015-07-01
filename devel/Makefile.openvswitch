@@ -42,7 +42,7 @@ endif
 
 $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES)
 	$(call display_message,openvswitch,"Applying patches to Open vSwitch")
-	for DIFF_FILE in $(OPENVSWITCH_PATCHES)/*.diff; do patch -p1 -d $(OPENVSWITCH_BUILD_DIR) < $$DIFF_FILE; done
+	for DIFF_FILE in $(OPENVSWITCH_PATCHES); do patch -p1 -d $(OPENVSWITCH_BUILD_DIR) < $$DIFF_FILE; done
 	touch $(OPENVSWITCH_BUILD_DIR)/.patched
 
 openvswitch: $(OPENVSWITCH_BUILD_DIR)/.patched $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh

@@ -128,11 +128,11 @@ else
 ifeq ($(STAGE),2)
 filesystem: $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
 else
-filesystem: $(FILESYSTEM_MOUNT_DIR)
+filesystem: .base-system-installed-$(TARGET_ARCH)
 endif
 endif
 
-$(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-complete
+$(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-complete-$(TARGET_ARCH)
 	$(call display_message,filesystem,"Sparsifying filesystem image and moving it to its default location")
 	mkdir -p $(FILESYSTEM_TARGET_DIR)
 	cp --sparse=always -f $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
@@ -140,16 +140,18 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 	$(call display_message,filesystem,"Saving list of packages")
 	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
-.filesystem-setup-complete: $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+.filesystem-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
 # Must take care to invoke slirp from a sane path, because UML converts spaces in the slirp
 # path to underscores
 # (see http://ptgmedia.pearsoncmg.com/images/9780131865051/downloads/013865056_Dike_book.pdf)
 	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(realpath $(TOOLS_ARCH_DIR)/slirp) quiet systemd.show_status=1
 	[ ! -f /tmp/.netkit-setup-running ]
-	touch .filesystem-setup-complete
+	touch .filesystem-setup-complete-$(TARGET_ARCH)
 
-$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz external-packages
+# The following target performs all the actions that require
+# the filesystem image to be mounted (using a loopback device).
+.base-system-installed-$(TARGET_ARCH): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz external-packages
 # This is the only phase that unavoidably requires root privileges (note:
 # working with fakeroot and fakechroot does not produce a working filesystem
 # image, at the very least because file ownerships are only simulated and not
@@ -175,9 +177,7 @@ else    # ifneq ($(shell whoami),root)
 	$(call display_message,filesystem,"Installing additional software pieces inside the filesystem image")
 	for ext_target in $(EXTERNAL_PACKAGES_INSTALL_TARGETS); do $(MAKE) $$ext_target; done
 	umount $(FILESYSTEM_MOUNT_DIR)
-# Since the filesystem image has now been more recently updated than the
-# filesystem mount directory, we need to touch the latter
-	touch $(FILESYSTEM_MOUNT_DIR)
+	touch .base-system-installed-$(TARGET_ARCH)
 endif
 
 
@@ -198,5 +198,5 @@ $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
 
 
 clean-filesystem: $(EXTERNAL_PACKAGES_CLEAN_TARGETS)
-	rm -fr $(FILESYSTEM_BUILD_DIR) .filesystem-setup-complete
+	rm -fr $(FILESYSTEM_BUILD_DIR) .base-system-installed-$(TARGET_ARCH) .filesystem-setup-complete-$(TARGET_ARCH)
 

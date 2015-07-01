@@ -45,15 +45,20 @@ $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DI
 	for DIFF_FILE in $(OPENVSWITCH_PATCHES); do patch -p1 -d $(OPENVSWITCH_BUILD_DIR)/ovs < $$DIFF_FILE; done
 	touch $(OPENVSWITCH_BUILD_DIR)/.patched
 
-openvswitch: $(OPENVSWITCH_BUILD_DIR)/.patched $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
+openvswitch: $(OPENVSWITCH_BUILD_DIR)/.ovs-compiled
+
+$(OPENVSWITCH_BUILD_DIR)/.ovs-compiled: $(OPENVSWITCH_BUILD_DIR)/.patched $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
 	$(call display_message,openvswitch,"Building Open vSwitch")
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./boot.sh
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./configure --prefix="$(realpath $(FILESYSTEM_MOUNT_DIR))" --with-linux="$(realpath $(UNPACKED_KERNEL_DIR))" $(EXTRA_CONFIGURE_FLAGS)
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH)
+	touch $(OPENVSWITCH_BUILD_DIR)/.ovs-compiled
 
-openvswitch-install: openvswitch $(FILESYSTEM_MOUNT_DIR)
+openvswitch-install: openvswitch
 	$(call display_message,openvswitch,"Installing Open vSwitch")
-	$(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH="$(KERNEL_TARGET_MODULES_DIR)" install modules_install
+# Check that the filesystem image is currently mounted
+	mountpoint $(FILESYSTEM_MOUNT_DIR)
+	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH="$(KERNEL_TARGET_MODULES_DIR)" install modules_install
 
 $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh:
 	$(call display_message,openvswitch,"Cloning openvswitch repository")

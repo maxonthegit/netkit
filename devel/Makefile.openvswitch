@@ -33,6 +33,7 @@ endif
 
 openvswitch: $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
 	$(call display_message,openvswitch,"Building Open vSwitch")
+	mkdir -p $(OPENVSWITCH_BUILD_DIR)
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./boot.sh
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./configure --prefix="$(FILESYSTEM_MOUNT_DIR)" --with-linux="$(UNPACKED_KERNEL_DIR)" $(EXTRA_CONFIGURE_FLAGS)
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH)
@@ -44,4 +45,7 @@ openvswitch-install: openvswitch $(FILESYSTEM_MOUNT_DIR)
 $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh:
 	$(call display_message,openvswitch,"Cloning openvswitch repository")
 	cd $(OPENVSWITCH_BUILD_DIR) && git clone $(OPENVSWITCH_GITHUB_URL)
+
+clean-openvswitch:
+	rm -fr $(OPENVSWITCH_BUILD_DIR)
 

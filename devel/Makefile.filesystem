@@ -111,6 +111,7 @@ include Makefile.openvswitch
 
 EXTERNAL_PACKAGES_TARGETS=openvswitch
 EXTERNAL_PACKAGES_INSTALL_TARGETS=$(foreach target,$(EXTERNAL_PACKAGES_TARGETS),$(target)-install)
+EXTERNAL_PACKAGES_CLEAN_TARGETS=$(foreach target,$(EXTERNAL_PACKAGES_TARGETS),clean-$(target))
 
 ###########################################################
 #                Filesystem-related targets
@@ -194,6 +195,6 @@ $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
 
 
 
-clean-filesystem:
-	rm -fr $(FILESYSTEM_BUILD_DIR) .filesystem-setup-complete $(OPENVSWITCH_BUILD_DIR)
+clean-filesystem: $(EXTERNAL_PACKAGES_CLEAN_TARGETS)
+	rm -fr $(FILESYSTEM_BUILD_DIR) .filesystem-setup-complete
 

@@ -122,7 +122,7 @@ external-packages: $(EXTERNAL_PACKAGES_TARGETS)
 # Isolate the steps in the build procedure that require root privileges to be
 # executed
 ifeq ($(shell whoami),root)
-filesystem: $(FILESYSTEM_MOUNT_DIR)
+filesystem: .base-system-installed-$(TARGET_ARCH)
 	$(call display_message,filesystem,"You can now continue the build as a standard user: just reinvoke the Makefile on the same filesystem target\(s\) specifying STAGE=2.")
 else
 ifeq ($(STAGE),2)

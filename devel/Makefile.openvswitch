@@ -39,7 +39,6 @@ OPENVSWITCH_COMMIT_SHA:=bc651c85497d7a8c32e83b44986dae27dec3bcd5   # 01 Jul 2015
 ifeq ($(TARGET_ARCH),i386)
 EXTRA_CONFIGURE_FLAGS=--disable-ssl
 endif
-for DIFF_FILE in $(KERNEL_PATCHES_DIR)/*.diff; do patch -p1 -d $(UNPACKED_KERNEL_DIR) < $$DIFF_FILE; done
 
 $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES)
 	$(call display_message,openvswitch,"Applying patches to Open vSwitch")

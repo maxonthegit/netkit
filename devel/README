@@ -1,3 +1,137 @@
+This README file briefly describes the procedure to be applied in order to
+(re)build User Mode Linux kernel and filesystem images that can be used with
+Netkit.
+
+As a side content, this file also describes how to (re)build the binary tools
+that are part of the Netkit user interface.
+
+______________________________________________________________________________
+
+ WHOM THIS README IS MEANT FOR
+______________________________________________________________________________
+
+Standard users should never need to build a kernel or filesystem, because the
+kernel and filesystem that are supplied in the downloadable Netkit package are
+all that is needed to access the full feature set of Netkit.
+This procedure is meant for developers and advanced users who want to introduce
+new functionalities or who just want to upgrade the kernel or filesystem to a
+more recent release.
+
+Please note that even installing software pieces inside the filesystem image
+does not require a complete rebuild. Instead, you can just alter the existing
+filesystem image by following the instructions documented in the main Netkit
+README file or in the on-line FAQs (http://wiki.netkit.org/index.php/FAQ).
+
+______________________________________________________________________________
+
+ DISCLAIMER
+______________________________________________________________________________
+
+The build steps, scripts, and Makefiles documented in this README are meant to
+be used by expert users. They have been designed to be fully automated and to
+operate in a safe way for your system, but they have been tested on a very
+limited range of platforms and there is no guarantee that they will not cause
+harm to your Linux setup. This is especially true because some build steps must
+be executed with root privileges.
+______________________________________________________________________________
+
+ HOW TO (RE)BUILD A USER MODE LINUX KERNEL FOR USE WITH NETKIT
+______________________________________________________________________________
+
+ * Prerequisites
+   - A host machine with a reasonably recent Debian Linux distribution (or
+     derived thereof). Debian-specific tools such as dpkg-deb are explicitly
+     required.
+   - An Internet connection.
+   - With respect to a base system installation (we take Ubuntu 15.04 as a
+     reference), the following additional packages must be installed:
+
+
+ * Procedure
+
+In order to build a new kernel you just need to issue the following commands:
+
+   $ cd netkit_dir/devel
+   $ make kernel
+
+The Makefile will automatically carry out the following steps:
+
+ 1) Download the source package for a vanilla Linux kernel. A default URL is
+    used for this step, but it can be changed by setting the KERNEL_SOURCE_URL
+    Makefile variable.
+ 2) Unpack the kernel source package.
+ 3) Apply Netkit-specific patches to the kernel sources.
+ 4) Configure the kernel using a pre-established configuration file.
+ 5) Download a few additional Debian packages, which will not be installed on
+    your system but rather just be unpacked to access required header files and
+    libraries.
+ 6) Compile the kernel.
+ 7) Copy the resulting kernel binary file to netkit_dir/kernel.
+ 8) Copy the associated kernel modules into an appropriate subdirectory of
+    netkit_dir/kernel.
+
+By default, this procedure will build a kernel for the same architecture (32- or
+64-bit) as the one of the host machine. It is also possible to cross compile a
+kernel for a different target architecture by appropriately setting the
+TARGET_ARCH Makefile variable. Only values 'i386' and 'x86_64' are supported at
+this time. Convenient Makefile targets can be used as an alternative to setting
+TARGET_ARCH:
+
+   $ make kernel32
+   $ make kernel64
+______________________________________________________________________________
+
+ HOW TO (RE)BUILD A FILESYSTEM IMAGE FOR USE WITH NETKIT
+______________________________________________________________________________
+
+ * Prerequisites
+   - A host machine with a reasonably recent Debian Linux distribution (or
+     derived thereof). Debian-specific tools such as dpkg-deb are explicitly
+     required.
+   - Root access on the machine. In addition, the user account that is being
+     used to perform the build must belong to the 'disk' group (more generally,
+     it must have read/write access to loopback devices /dev/loop*).
+   - An Internet connection.
+   - With respect to a base system installation (we take Ubuntu 15.04 as a
+     reference), the following additional packages must be installed:
+
+   - A Netkit kernel (and its modules) must be available inside
+     netkit_dir/kernel/, either as a result of a previous build or as part of
+     the downloaded Netkit package.
+
+ * Procedure
+
+Warning: a complete filesystem build may take a (very) long time, even on a
+reasonably fast machine. For reference, it takes slightly less than one hour and
+half to finish the build for a single target architecture (32-bit or 64-bit) on
+a quad-core workstation with a 7200rpm hard drive.
+
+The filesystem build process consists of 3 steps that must be carried out
+separately:
+
+   $ cd netkit_dir/devel
+   $ make filesystem
+   $ sudo make filesystem
+   $ make filesystem STAGE=2
+
+The reason for this is that at least some operations require root privileges to
+be performed: this motivates the usage of 'sudo' in the second invocation of
+'make filesystem'. At the end of the first step, a suitable message will inform
+the user that the Makefile must be reinvoked with root privileges on the same
+target ('filesystem'). For security reasons, root privileges are dropped as soon
+as they are no longer needed: another message at the end of the second step
+informs the user that the Makefile can be reinvoked without root privileges (and
+with the 'STAGE=2' statement to correctly execute the last part of the build).
+
+
+
+______________________________________________________________________________
+
+ HOW TO (RE)BUILD THE BINARY NETKIT TOOLS
+______________________________________________________________________________
+
+
+
 Ubuntu 14.04 (trusty) x86_64
 
 

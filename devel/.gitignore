@@ -3,4 +3,5 @@ fs-build-*
 bintools-build-*
 ovs-build-*
 linux-*
-
+.filesystem-setup-complete*
+.*-compiled-*

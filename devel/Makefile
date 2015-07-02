@@ -28,10 +28,10 @@ TARGET_ARCH?=$(shell arch)
 
 # Variable: TOOLS_BUILD_DIR
 # Specifies the name of the directory where work files for building
-# command line tools will be kept. It is usually a relative path, but absolute
-# paths should work as well. Example:
-# TOOLS_BUILD_DIR:=bintools-build
-TOOLS_BUILD_DIR:=bintools-build-$(TARGET_ARCH)
+# command line tools will be kept. It should always be an absolute path.
+# Example:
+# TOOLS_BUILD_DIR:=$(CURDIR)/bintools-build
+TOOLS_BUILD_DIR:=$(CURDIR)/bintools-build-$(TARGET_ARCH)
 
 
 
@@ -134,16 +134,18 @@ endef
 # Disable built-in rules
 MAKEFLAGS+=-r
 
-NETKIT_HOME:=$(PWD)/..
+NETKIT_HOME:=$(CURDIR)/..
 
 # Unset any value assigned to the CDPATH environment variable: they may cause
 # following 'cd' invocations to move to unexpected directories.
 override CDPATH:=
 
 # The following variable points to a directory that contains patches that must
-# be applied to software pieces other than the UML kernel.
-OTHER_PATCHES_DIR:=other-patches
-# Example value for OTHER_PATCHES_DIR: other-patches
+# be applied to software pieces other than the UML kernel. It should always
+# be an absolute path.
+# Example:
+# OTHER_PATCHES_DIR:=$(CURDIR)/other-patches
+OTHER_PATCHES_DIR:=$(CURDIR)/other-patches
 
 .PHONY: bintools bintools32 bintools64 kernel kernel32 kernel64 filesystem filesystem32 filesystem64
 

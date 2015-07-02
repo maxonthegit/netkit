@@ -16,8 +16,6 @@
   results in some failures (already existing files that the patch would create anew with different contents)
 - Test functionality of Netkit-specific patches
 
-- modpost and other scripts/utilities might be compiled for the wrong architecture (becomes evident when building openvswitch)
-
 === Filesystem ===
 
 - Test lab-related scripts (including the banner)

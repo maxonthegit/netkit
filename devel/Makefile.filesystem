@@ -26,10 +26,10 @@
 
 # Variable: FILESYSTEM_BUILD_DIR
 # Specifies the name of the directory where work files for building the
-# filesystem image will be kept. It is usually a relative path, but absolute
-# paths should work as well. Example:
-# FILESYSTEM_BUILD_DIR:=fs-build
-FILESYSTEM_BUILD_DIR:=fs-build-$(TARGET_ARCH)
+# filesystem image will be kept. It should always be an absolute path.
+# Example:
+# FILESYSTEM_BUILD_DIR:=$(CURDIR)/fs-build
+FILESYSTEM_BUILD_DIR:=$(CURDIR)/fs-build-$(TARGET_ARCH)
 
 # Variable: FILESYSTEM_BASEPACKAGES_ARCHIVE
 # Temporary compressed file where base .deb packages for building the filesystem
@@ -66,8 +66,8 @@ DEBIAN_RELEASE?=sid
 # Specifies the amount of available space inside the filesystem image (since
 # it is created as a sparse file, this does not correspond to actual physical
 # disk space consumption). Suffixes such as K, M, and G, are supported. Example:
-# FILESYSTEM_IMAGE_SIZE?=20G
-FILESYSTEM_IMAGE_SIZE?=20G
+# FILESYSTEM_IMAGE_SIZE?=10G
+FILESYSTEM_IMAGE_SIZE?=10G
 
 # The following assignment determines the filesystem type used inside the
 # Netkit filesystem image
@@ -107,13 +107,14 @@ endif
 #           Build targets for external packages
 ###########################################################
 
-include Makefile.openvswitch
+EXTERNAL_PACKAGES=openvswitch
 
-EXTERNAL_PACKAGES_TARGETS=openvswitch
-EXTERNAL_PACKAGES_INSTALL_TARGETS=$(foreach target,$(EXTERNAL_PACKAGES_TARGETS),$(target)-install)
-EXTERNAL_PACKAGES_CLEAN_TARGETS=$(foreach target,$(EXTERNAL_PACKAGES_TARGETS),clean-$(target))
+EXTERNAL_PACKAGES_MAKEFILES=$(foreach package,$(EXTERNAL_PACKAGES),Makefile.$(package))
+EXTERNAL_PACKAGES_TARGETS=$(foreach package,$(EXTERNAL_PACKAGES),.$(package)-compiled-$(TARGET_ARCH))
+EXTERNAL_PACKAGES_INSTALL_TARGETS=$(foreach package,$(EXTERNAL_PACKAGES),$(package)-install)
+EXTERNAL_PACKAGES_CLEAN_TARGETS=$(foreach package,$(EXTERNAL_PACKAGES),clean-$(package))
 
-external-packages: $(EXTERNAL_PACKAGES_TARGETS)
+include $(EXTERNAL_PACKAGES_MAKEFILES)
 
 ###########################################################
 #                Filesystem-related targets
@@ -122,13 +123,13 @@ external-packages: $(EXTERNAL_PACKAGES_TARGETS)
 # Isolate the steps in the build procedure that require root privileges to be
 # executed
 ifeq ($(shell whoami),root)
-filesystem: .base-system-installed-$(TARGET_ARCH)
+filesystem: $(FILESYSTEM_MOUNT_DIR)
 	$(call display_message,filesystem,"You can now continue the build as a standard user: just reinvoke the Makefile on the same filesystem target\(s\) specifying STAGE=2.")
 else
 ifeq ($(STAGE),2)
 filesystem: $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
 else
-filesystem: .base-system-installed-$(TARGET_ARCH)
+filesystem: $(FILESYSTEM_MOUNT_DIR)
 endif
 endif
 
@@ -151,7 +152,7 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 
 # The following target performs all the actions that require
 # the filesystem image to be mounted (using a loopback device).
-.base-system-installed-$(TARGET_ARCH): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz external-packages
+$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz $(EXTERNAL_PACKAGES_TARGETS)
 # This is the only phase that unavoidably requires root privileges (note:
 # working with fakeroot and fakechroot does not produce a working filesystem
 # image, at the very least because file ownerships are only simulated and not
@@ -177,7 +178,9 @@ else    # ifneq ($(shell whoami),root)
 	$(call display_message,filesystem,"Installing additional software pieces inside the filesystem image")
 	for ext_target in $(EXTERNAL_PACKAGES_INSTALL_TARGETS); do $(MAKE) $$ext_target; done
 	umount $(FILESYSTEM_MOUNT_DIR)
-	touch .base-system-installed-$(TARGET_ARCH)
+# At this point the filesystem mount directory may have an older
+# modification time than the filesystem image's.
+	touch $(FILESYSTEM_MOUNT_DIR)
 endif
 
 
@@ -198,5 +201,5 @@ $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
 
 
 clean-filesystem: $(EXTERNAL_PACKAGES_CLEAN_TARGETS)
-	rm -fr $(FILESYSTEM_BUILD_DIR) .base-system-installed-$(TARGET_ARCH) .filesystem-setup-complete-$(TARGET_ARCH)
+	rm -fr $(FILESYSTEM_BUILD_DIR) .filesystem-setup-complete-$(TARGET_ARCH) $(EXTERNAL_PACKAGES_TARGETS)
 

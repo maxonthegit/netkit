@@ -36,10 +36,10 @@ KERNEL_SOURCE_URL?=https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.0.tar.xz
 NETKIT_KERNEL_CONFIG_FILE:=$(wildcard netkit-kernel-config-*-$(TARGET_ARCH))
 
 # Variable: KERNEL_BUILD_DIR
-# Specifies the name of the directory where the kernel will be built. It is
-# usually a relative path, but absolute paths should work as well. Example:
-# KERNEL_BUILD_DIR:=kernel-build
-KERNEL_BUILD_DIR:=kernel-build-$(TARGET_ARCH)
+# Specifies the name of the directory where the kernel will be built. It must
+# be an absolute path. Example:
+# KERNEL_BUILD_DIR:=$(CURDIR)/kernel-build
+KERNEL_BUILD_DIR:=$(CURDIR)/kernel-build-$(TARGET_ARCH)
 
 # Variable: KERNEL_UNPACKED_DEBS_DIR
 # Subdirectory where .deb packages will be unpacked
@@ -88,6 +88,9 @@ KERNEL_TARGET_FILE_NAME=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
 
 KERNEL_TARGET_MODULES_DIR=$(NETKIT_HOME)/kernel/modules-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
 # Sample value for KERNEL_TARGET_MODULES_DIR: netkit/kernel/modules-4.0.0-x86_64
+# This variable needs to be exported because it may be used by the Makefile
+# of some external package referenced while building the filesystem image.
+export KERNEL_TARGET_MODULES_DIR
 
 
 
@@ -141,12 +144,12 @@ $(KERNEL_PACKAGE_FILE):
 # Here --no-use-server-timestamps is used in order to make sure that
 # the last changed date of the kernel package is the current time
 # (required for proper detection of prerequisite "freshness")
-	wget --progress=bar --no-use-server-timestamps $(KERNEL_SOURCE_URL)
+	wget --progress=dot:mega --no-use-server-timestamps $(KERNEL_SOURCE_URL)
 
 $(KERNEL_UNPACKED_DEBS_DIR)/usr:
 	$(call display_message,kernel,"Downloading and extracting support libraries required for kernel compilation")
 	mkdir -p $(KERNEL_UNPACKED_DEBS_DIR); rm -f $(KERNEL_BUILD_DIR)/*.deb
-	wget -P $(KERNEL_BUILD_DIR) --progress=bar $(HEADER_LIBRARY_DEBS_URL)
+	wget -P $(KERNEL_BUILD_DIR) --progress=dot:binary $(HEADER_LIBRARY_DEBS_URL)
 	for DEB_FILE in $(KERNEL_BUILD_DIR)/*.deb; do dpkg-deb -x $$DEB_FILE $(KERNEL_UNPACKED_DEBS_DIR); done
 
 

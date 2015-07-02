@@ -23,7 +23,10 @@
 . /opt/netkit-setup/utils.sh
 
 becho "Enabling forwarding"
-sed -i 's/net\.ipv4\.ip_forward/net.ipv4.ip_forward=1/; s/net\.ipv6\.conf\.all\.forwarding/net.ipv6.conf.all.forwarding=1/' /etc/sysctl.conf
+sed -i '/net\.ipv4\.ip_forward/ c\
+net.ipv4.ip_forward=1
+/net\.ipv6\.conf\.all\.forwarding/ c\
+net.ipv6.conf.all.forwarding=1' /etc/sysctl.conf
 
 becho "Disabling ICMP rate limiting"
 echo "net.ipv4.icmp_ratelimit=0" >> /etc/sysctl.conf

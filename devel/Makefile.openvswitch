@@ -37,8 +37,9 @@ OPENVSWITCH_COMMIT_SHA:=bc651c85497d7a8c32e83b44986dae27dec3bcd5   # 01 Jul 2015
 # SSL is apparently unsupported for 32 bit builds
 # (see also https://github.com/openvswitch/ovs/blob/master/.travis.yml)
 ifeq ($(TARGET_ARCH),i386)
-EXTRA_CONFIGURE_FLAGS=--disable-ssl
+OPENVSWITCH_CONFIGURE_OPTS=--disable-ssl
 endif
+
 
 $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
 	$(call display_message,openvswitch,"Applying patches to Open vSwitch")
@@ -46,17 +47,23 @@ $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DI
 	touch $(OPENVSWITCH_BUILD_DIR)/.patched
 
 .openvswitch-compiled-$(TARGET_ARCH): $(OPENVSWITCH_BUILD_DIR)/.patched $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
-	$(call display_message,openvswitch,"Building Open vSwitch")
+	$(call display_message,openvswitch,"Building Debian packages")
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./boot.sh
-	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./configure --prefix="$(realpath $(FILESYSTEM_MOUNT_DIR))" --with-linux="$(realpath $(UNPACKED_KERNEL_DIR))" $(EXTRA_CONFIGURE_FLAGS)
+	cd $(OPENVSWITCH_BUILD_DIR)/ovs && \
+	   export $(shell dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f) && \
+	   DATAPATH_CONFIGURE_OPTS="$(OPENVSWITCH_CONFIGURE_OPTS)" DEB_CFLAGS_SET="$(COMPILE_FLAGS)" DEB_BUILD_OPTIONS='parallel=$(shell nproc) nocheck' fakeroot debian/rules binary
+	$(call display_message,openvswitch,"Building Open vSwitch")
+	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./configure --prefix="$(FILESYSTEM_MOUNT_DIR)" --with-linux="$(UNPACKED_KERNEL_DIR)" $(OPENVSWITCH_CONFIGURE_OPTS)
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH)
 	touch .openvswitch-compiled-$(TARGET_ARCH)
 
 openvswitch-install: .openvswitch-compiled-$(TARGET_ARCH)
-	$(call display_message,openvswitch,"Installing Open vSwitch")
 # Check that the filesystem image is currently mounted
 	mountpoint $(FILESYSTEM_MOUNT_DIR)
-	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH="$(realpath $(KERNEL_TARGET_MODULES_DIR))" install modules_install
+	$(call display_message,openvswitch,"Copying Debian packages inside the filesystem image for later installation")
+	cp $(wildcard $(OPENVSWITCH_BUILD_DIR)/*_$(TARGET_ARCH_DEBIAN).deb) $(FILESYSTEM_MOUNT_DIR)/opt
+	$(call display_message,openvswitch,"Installing kernel modules")
+	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH="$(KERNEL_TARGET_MODULES_DIR)" modules_install
 
 $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh:
 	$(call display_message,openvswitch,"Cloning openvswitch repository")

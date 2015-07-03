@@ -26,6 +26,14 @@ SHELL=/bin/bash
 # TARGET_ARCH?=x86_64
 TARGET_ARCH?=$(shell arch)
 
+ifeq ($(TARGET_ARCH),i386)
+TARGET_ARCH_DEBIAN:=i386
+else ifeq ($(TARGET_ARCH),x86_64)
+TARGET_ARCH_DEBIAN:=amd64
+else
+$(error "Invalid target architecture: $(TARGET_ARCH) \(only i386 and x86_64 are supported\)")
+endif
+
 # Variable: TOOLS_BUILD_DIR
 # Specifies the name of the directory where work files for building
 # command line tools will be kept. It should always be an absolute path.

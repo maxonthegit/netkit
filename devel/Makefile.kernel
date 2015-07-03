@@ -88,11 +88,9 @@ KERNEL_TARGET_FILE_NAME=netkit-kernel-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
 
 KERNEL_TARGET_MODULES_DIR=$(NETKIT_HOME)/kernel/modules-$(KERNEL_VERSION_NUMBER)-$(TARGET_ARCH)
 # Sample value for KERNEL_TARGET_MODULES_DIR: netkit/kernel/modules-4.0.0-x86_64
-# This variable needs to be exported because it may be used by the Makefile
-# of some external package referenced while building the filesystem image.
+# This variable must be exported for being used by the Makefile of
+# openvswitch.
 export KERNEL_TARGET_MODULES_DIR
-
-
 
 ###########################################################
 #                  Kernel build targets
@@ -119,7 +117,7 @@ $(UNPACKED_KERNEL_DIR)/vmlinux: $(UNPACKED_KERNEL_DIR)/.config $(KERNEL_UNPACKED
 	$(call display_message,kernel,"Compiling kernel")
 # Apparently, using LDFLAGS=-L with the appropriate path does not seem to work
 # in the following line. This is why LIBRARY_PATH is used instead.
-	$(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) CFLAGS="-I$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/include)" LIBRARY_PATH="$(realpath $(KERNEL_UNPACKED_DEBS_DIR)/usr/lib)" ARCH=um SUBARCH=$(TARGET_ARCH) all
+	$(MAKE) -C $(UNPACKED_KERNEL_DIR) -j $(shell nproc) CFLAGS="-I$(KERNEL_UNPACKED_DEBS_DIR)/usr/include" LIBRARY_PATH="$(KERNEL_UNPACKED_DEBS_DIR)/usr/lib" ARCH=um SUBARCH=$(TARGET_ARCH) all
 
 $(UNPACKED_KERNEL_DIR)/.config: $(UNPACKED_KERNEL_DIR)/.patched
 	$(call display_message,kernel,"Configuring kernel")

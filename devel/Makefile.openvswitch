@@ -48,7 +48,7 @@ $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DI
 
 .openvswitch-compiled-$(TARGET_ARCH): $(OPENVSWITCH_BUILD_DIR)/.patched $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
 	$(call display_message,openvswitch,"Building Debian packages")
-	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./boot.sh
+# The following commands automatically invoked boot.sh if required
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && \
 	   export $(shell dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f) && \
 	   DATAPATH_CONFIGURE_OPTS="$(OPENVSWITCH_CONFIGURE_OPTS)" DEB_CFLAGS_SET="$(COMPILE_FLAGS)" DEB_BUILD_OPTIONS='parallel=$(shell nproc) nocheck' fakeroot debian/rules binary
@@ -61,7 +61,7 @@ openvswitch-install: .openvswitch-compiled-$(TARGET_ARCH)
 # Check that the filesystem image is currently mounted
 	mountpoint $(FILESYSTEM_MOUNT_DIR)
 	$(call display_message,openvswitch,"Copying Debian packages inside the filesystem image for later installation")
-	cp $(wildcard $(OPENVSWITCH_BUILD_DIR)/*_$(TARGET_ARCH_DEBIAN).deb) $(FILESYSTEM_MOUNT_DIR)/opt
+	cp $(wildcard $(OPENVSWITCH_BUILD_DIR)/*_$(TARGET_ARCH_DEBIAN).deb) $(wildcard $(OPENVSWITCH_BUILD_DIR)/*_all.deb) $(FILESYSTEM_MOUNT_DIR)/opt
 	$(call display_message,openvswitch,"Installing kernel modules")
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH="$(KERNEL_TARGET_MODULES_DIR)" modules_install
 

@@ -22,9 +22,11 @@
 
 . /opt/netkit-setup/utils.sh
 
-becho "Installing dependencies for Open vSwitch"
-#apt-get install -y
-
 becho "Installing Open vSwitch"
-ls /opt/*.deb | grep -Ev "openvswitch-ipsec" | xargs dpkg -i
+# Skip some packages whose dependencies would break the rest of the Netkit
+# setup:
+# - openvswitch-ipsec depends on racoon, which conflicts with strongswan
+ls /opt/*.deb | grep -Ev "openvswitch-ipsec|openvswitch-datapath-|openvswitch-test" | xargs dpkg -i
+
+systemctl disable openvswitch-switch
 

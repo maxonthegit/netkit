@@ -22,37 +22,6 @@
 
 . /opt/netkit-setup/utils.sh
 
-becho "Removing temporary files inside virtual machines"
-rm /opt/*.deb
-
-becho "Cleaning up apt cache"
-apt-get clean
-
-becho "Building locate database"
-/usr/bin/updatedb
-
-becho "Zeroing empty space (this may take a while)"
-trap "/usr/bin/killall dd" TERM INT
-dd if=/dev/zero of=/tmp/filler.dat &
-DD_PID=$!
-while [ -d /proc/$DD_PID ]; do
-   sleep 5
-   # Use `|| true' to prevent the script from aborting
-   kill -USR1 $DD_PID || true
-done
-echo "Removing temporary file..."
-rm /tmp/filler.dat
-
-becho "Removing Netkit setup scripts"
-rm -r /opt/netkit-setup
-rm /etc/systemd/system/multi-user.target.wants/netkit-setup.service
-
-becho "Removing temporary file on /tmp on the host"
-mkdir -p /temphost
-mount -t hostfs -o rw,/tmp none /temphost
-rm /temphost/.netkit-setup-running
-umount /temphost
-rmdir /temphost
-
-halt
+becho "Creating convenient symbolic links to Ryu apps"
+ln -s /usr/lib/python2.7/dist-packages/ryu /opt
 

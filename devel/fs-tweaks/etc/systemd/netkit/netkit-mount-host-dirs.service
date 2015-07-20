@@ -33,7 +33,7 @@ ConditionKernelCommandLine=|hosthome
 ConditionKernelCommandLine=|hostlab
 
 [Service]
-Type=simple
+Type=oneshot
 RemainAfterExit=yes
 ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/mount-host-dirs.sh
 

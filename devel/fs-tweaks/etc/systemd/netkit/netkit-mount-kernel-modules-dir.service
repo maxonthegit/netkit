@@ -31,7 +31,7 @@ Before=netkit-ltest.service
 ConditionKernelCommandLine=modules
 
 [Service]
-Type=simple
+Type=oneshot
 RemainAfterExit=yes
 ExecStart=/etc/systemd/netkit/pass-cmdline-to-script.sh /etc/systemd/netkit/mount-kernel-modules-dir.sh
 

@@ -32,7 +32,7 @@ Before=netkit-ltest.service
 ConditionPathExists=!/etc/vhostconfigured
 
 [Service]
-Type=simple
+Type=oneshot
 RemainAfterExit=yes
 ExecStart=/etc/systemd/netkit/get-vm-files.sh
 

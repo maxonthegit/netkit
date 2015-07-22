@@ -54,6 +54,10 @@ help:
 	@echo
 	@echo "Available targets are:"
 	@echo
+	@echo "bintools"
+	@echo "   Generate any command line and Netkit-specific support tools that"
+	@echo "   are supposed to be built from source code."
+	@echo
 	@echo "kernel"
 	@echo "   Build a user-mode Linux kernel to be used with Netkit. The kernel"
 	@echo "   source, as well as a few auxiliary header files, are automatically"
@@ -77,33 +81,36 @@ help:
 	@echo "all"
 	@echo "   Build both the kernel and the filesystem."
 	@echo 
+	@echo "clean-bintools"
 	@echo "clean-kernel"
 	@echo "clean-filesystem"
 	@echo "   Clean any intermediate and final products of the respective build"
-	@echo "   processes."
+	@echo "   processes. Using 'clean' as a target is a shortcut for 'clean-bintools"
+	@echo "   clean-kernel clean-filesystem'."
 	@echo 
 	@echo "By default, the Makefile performs a build for a target architecture"
 	@echo "that matches the host architecture (that is, if the Makefile is run"
 	@echo "on a 64-bit host, it will build a 64-bit kernel and a 64-bit filesystem"
 	@echo "image). The target architecture can be forced by using variable"
-	@echo "TARGET_ARCH, which has two possible values: 'i386' and 'amd64'. All the"
-	@echo "above targets can be invoked with suffix '32' or '64' to force a build"
-	@echo "for 32-bit or 64-bit architectures, respectively. Using 'make kernel32'"
-	@echo "or 'make TARGET_ARCH=i386 kernel' is equivalent."
+	@echo "TARGET_ARCH, which has two possible values: 'i386' and 'amd64'."
+	@echo "Alternatively, any of the above targets can be invoked with suffix '32'"
+	@echo "or '64' to force a build for 32-bit or 64-bit architectures, respectively."
+	@echo "Using 'make kernel32' or 'make TARGET_ARCH=i386 kernel' is equivalent."
 	@echo
 	@echo "everything"
-	@echo "   Build both the kernel and the filesystem, both for a 32-bit"
-	@echo "   architecture and for a 64-bit architecture. This is a shortcut for"
-	@echo "   the typical 'build everything' pipeline:"
-	@echo "   make kernel32 kernel64 filesystem32 filesystem64 && \\"
-	@echo "   sudo make filesystem32 filesystem64 && \\"
-	@echo "   make filesystem32 filesystem64 STAGE=2"
+	@echo "   Build any relevant command line tools, the kernel, and the
+	@echo "   filesystem, both for a 32-bit architecture and for a 64-bit"
+	@echo "   architecture. This is a shortcut for the typical 'build everything'"
+	@echo "   pipeline:"
+	@echo "     make bintools32 bintools64 kernel32 kernel64 filesystem32 filesystem64 && \\"
+	@echo "     sudo make filesystem32 filesystem64 && \\"
+	@echo "     make filesystem32 filesystem64 STAGE=2"
 	@echo "   Users invoking this target should have adequate privileges"
 	@echo "   set up in the sudoers file."
 	@echo 
-	@echo "clean"
-	@echo "   A synonym for 'clean-kernel32 clean-kernel64 clean-filesystem32"
-	@echo "   clean-filesystem64'."
+	@echo "clean-everything"
+	@echo "   A synonym for 'clean-bintools32 clean-bintools64 clean-kernel32"
+	@echo "   clean-kernel64 clean-filesystem32 clean-filesystem64'."
 	@echo
 	@echo "The following variables can be specified on the make command line in"
 	@echo "order to tune the build process:"
@@ -158,12 +165,16 @@ OTHER_PATCHES_DIR:=$(CURDIR)/other-patches
 .PHONY: bintools bintools32 bintools64 kernel kernel32 kernel64 filesystem filesystem32 filesystem64
 
 all: bintools kernel filesystem
-all32: kernel32 filesystem32
-all64: kernel64 filesystem64
-everything: bintools32 bintools64 kernel32 kernel64 filesystem32 filesystem64
+all32: bintools32 kernel32 filesystem32
+all64: bintools64 kernel64 filesystem64
+everything: all32 all64
 	sudo $(MAKE) filesystem32 filesystem64
 	$(MAKE) STAGE=2 filesystem32 filesystem64
 
+bintools32:
+	$(MAKE) TARGET_ARCH=i386 bintools
+bintools64:
+	$(MAKE) TARGET_ARCH=x86_64 bintools
 kernel32:
 	$(MAKE) TARGET_ARCH=i386 kernel
 kernel64:
@@ -172,10 +183,6 @@ filesystem32:
 	$(MAKE) TARGET_ARCH=i386 filesystem
 filesystem64:
 	$(MAKE) TARGET_ARCH=x86_64 filesystem
-bintools32:
-	$(MAKE) TARGET_ARCH=i386 bintools
-bintools64:
-	$(MAKE) TARGET_ARCH=x86_64 bintools
 
 ifeq ($(TARGET_ARCH),i386)
 COMPILE_FLAGS=-m32
@@ -238,6 +245,10 @@ clean-everything: clean-bintools32 clean-bintools64 clean-kernel32 clean-kernel6
 clean-bintools:
 	rm -fr $(TOOLS_BUILD_DIR)
 
+clean-bintools32:
+	$(MAKE) TARGET_ARCH=i386 clean-bintools
+clean-bintools64:
+	$(MAKE) TARGET_ARCH=x86_64 clean-bintools
 clean-kernel32:
 	$(MAKE) TARGET_ARCH=i386 clean-kernel
 clean-kernel64:
@@ -246,8 +257,4 @@ clean-filesystem32:
 	$(MAKE) TARGET_ARCH=i386 clean-filesystem
 clean-filesystem64:
 	$(MAKE) TARGET_ARCH=x86_64 clean-filesystem
-clean-bintools32:
-	$(MAKE) TARGET_ARCH=i386 clean-bintools
-clean-bintools64:
-	$(MAKE) TARGET_ARCH=x86_64 clean-bintools
 

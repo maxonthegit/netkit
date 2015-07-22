@@ -26,6 +26,4 @@
   POX
   FlowVisor
   (sFlow)
-  Open vSwitch (git version) => DEB_BUILD_OPTIONS=nocheck debian/rules binary, then install the module source package, cd to /usr/src/modules/openvswitch and execute 'debian/rules kdist_image' (https://github.com/openvswitch/ovs/blob/master/debian/openvswitch-datapath-source.README.Debian)
-  Open vSwitch PKI
 

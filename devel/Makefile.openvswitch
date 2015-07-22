@@ -48,7 +48,7 @@ $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DI
 
 .openvswitch-compiled-$(TARGET_ARCH): $(OPENVSWITCH_BUILD_DIR)/.patched $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
 	$(call display_message,openvswitch,"Building Debian packages")
-# The following commands automatically invoked boot.sh if required
+# The following commands automatically invoke boot.sh if required
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && \
 	   export $(shell dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f) && \
 	   DATAPATH_CONFIGURE_OPTS="$(OPENVSWITCH_CONFIGURE_OPTS)" DEB_CFLAGS_SET="$(COMPILE_FLAGS)" DEB_BUILD_OPTIONS='parallel=$(shell nproc) nocheck' fakeroot debian/rules binary

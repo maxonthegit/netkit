@@ -98,7 +98,7 @@ help:
 	@echo "Using 'make kernel32' or 'make TARGET_ARCH=i386 kernel' is equivalent."
 	@echo
 	@echo "everything"
-	@echo "   Build any relevant command line tools, the kernel, and the
+	@echo "   Build any relevant command line tools, the kernel, and the"
 	@echo "   filesystem, both for a 32-bit architecture and for a 64-bit"
 	@echo "   architecture. This is a shortcut for the typical 'build everything'"
 	@echo "   pipeline:"

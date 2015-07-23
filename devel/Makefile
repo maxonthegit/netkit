@@ -25,13 +25,19 @@ SHELL=/bin/bash
 # is to be built for. Example:
 # TARGET_ARCH?=x86_64
 TARGET_ARCH?=$(shell arch)
+ifeq ($(TARGET_ARCH),i686)
+TARGET_ARCH=i386
+endif
+ifeq ($(TARGET_ARCH),i586)
+TARGET_ARCH=i386
+endif
 
 ifeq ($(TARGET_ARCH),i386)
 TARGET_ARCH_DEBIAN:=i386
 else ifeq ($(TARGET_ARCH),x86_64)
 TARGET_ARCH_DEBIAN:=amd64
 else
-$(error "Invalid target architecture: $(TARGET_ARCH) \(only i386 and x86_64 are supported\)")
+$(error Invalid target architecture: $(TARGET_ARCH) (only i386 and x86_64 are supported))
 endif
 
 # Variable: TOOLS_BUILD_DIR

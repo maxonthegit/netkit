@@ -31,7 +31,7 @@ apt-get update
 rm /netkit-fs-debconf
 
 # First pass: install most packages
-cat <<EOF | sed 's/#.*$//' | grep -v "^ *$" | xargs apt-get install -y
+cat <<EOF | sed 's/#.*$//' | grep -v "^ *$" | xargs apt-get install -y --force-yes
 
 # SDN-related tools
 python-ryu
@@ -176,9 +176,9 @@ EOF
 
 becho "Installing dependencies for Open vSwitch"
 if [ "$(arch)" = "x86_64" ]; then
-   apt-get install -y libatomic1 lib32atomic1 libc6-i386 uuid-runtime python-twisted-web
+   apt-get install -y --force-yes libatomic1 lib32atomic1 libc6-i386 uuid-runtime python-twisted-web
 else
-   apt-get install -y libatomic1 uuid-runtime python-twisted-web
+   apt-get install -y --force-yes libatomic1 uuid-runtime python-twisted-web
 fi
 
 
@@ -195,7 +195,7 @@ bind9
 pdnsd
 EOF
 
-cat <<EOF | sed 's/#.*$//' | grep -v "^ *$" | xargs apt-get install -y || true
+cat <<EOF | sed 's/#.*$//' | grep -v "^ *$" | xargs apt-get install -y --force-yes || true
 dnsmasq # Requires stopping bind9 before being installed
 isc-dhcp-client # Installation scripts fail because they attempt to start the service without any configured interfaces to listen on, and because the only available interface is of type "Serial Line IP", not Ethernet
 pimd # Expected to fail because of the lack of configured vifs

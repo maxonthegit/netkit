@@ -39,7 +39,7 @@ POX_COMMIT_SHA:=cfebf79c9abaffbebe864b9427a2e3694c04aa70   # 22 Jul 2015 (branch
 pox-install: .pox-compiled-$(TARGET_ARCH)
 # Check that the filesystem image is currently mounted
 	mountpoint $(FILESYSTEM_MOUNT_DIR)
-	$(call display_message,pox,"Copying POX files inside the filesystem image (this effectively installs POX)")
+	$(call display_message,pox,"Copying POX files inside the filesystem image \(this effectively installs POX\)")
 	cp -dR $(wildcard $(POX_BUILD_DIR)/pox) $(FILESYSTEM_MOUNT_DIR)/opt
 
 $(POX_BUILD_DIR)/pox/pox.py:

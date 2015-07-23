@@ -43,8 +43,11 @@ ______________________________________________________________________________
      derived thereof). Debian-specific tools such as dpkg-deb are explicitly
      required.
    - An Internet connection.
-   - With respect to a base system installation (we take Ubuntu 15.04 as a
+   - With respect to a base system installation (we take Ubuntu 14.04 as a
      reference), the following additional packages must be installed:
+
+       gcc-multilib (required only if you are building for a target architecture
+                    different from your host's)
 
 
  * Procedure
@@ -133,12 +136,7 @@ ______________________________________________________________________________
 
 
 Ubuntu 14.04 (trusty) x86_64
-
-
-Additional packages required for kernel64: none
-Additional packages required for kernel32: gcc-multilib
-
-
-Additional packages required for filesystem64: libssl-dev (for ovs; also applies to filesystem32)
+Additional packages required for filesystem64: fakeroot debootstrap debhelper
+autoconf libtool libssl-dev
 Additional packages required for filesystem32: debootstrap fakeroot dpkg-dev +adding user to the 'disk' group
 

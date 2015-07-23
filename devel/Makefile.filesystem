@@ -98,7 +98,7 @@ FILESYSTEM_MOUNT_DIR:=$(FILESYSTEM_BUILD_DIR)/temp-fs-mount
 #           Build targets for external packages
 ###########################################################
 
-EXTERNAL_PACKAGES=openvswitch
+EXTERNAL_PACKAGES=openvswitch pox
 
 EXTERNAL_PACKAGES_MAKEFILES=$(foreach package,$(EXTERNAL_PACKAGES),Makefile.$(package))
 EXTERNAL_PACKAGES_TARGETS=$(foreach package,$(EXTERNAL_PACKAGES),.$(package)-compiled-$(TARGET_ARCH))

@@ -27,3 +27,7 @@
   FlowVisor
   (sFlow)
 
+- Warning: Open vSwitch may require multiple runs for being built
+
+- Update list of installed packages with software pieces compiled from source code
+

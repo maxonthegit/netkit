@@ -23,11 +23,8 @@
 - pgset (packet generator) => found at http://lxr.free-electrons.com/source/Documentation/networking/pktgen.txt?v=2.4.37#L49
 - Additional software pieces candidate for installation:
   Lagopus
-  POX
   FlowVisor
   (sFlow)
-
-- Warning: Open vSwitch may require multiple runs for being built
 
 - Update list of installed packages with software pieces compiled from source code
 

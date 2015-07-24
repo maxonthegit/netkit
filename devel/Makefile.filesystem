@@ -131,6 +131,7 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 	rm -f $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 	$(call display_message,filesystem,"Saving list of packages")
 	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
+	{ echo "=== SOFTWARE PIECES COMPILED FROM SOURCE CODE ==="; for i in $(EXTERNAL_PACKAGES); do echo $$i; done; } >> $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
 .filesystem-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")

@@ -2,6 +2,8 @@ kernel-build-*
 fs-build-*
 bintools-build-*
 ovs-build-*
+pox-build*
+flowvisor-build*
 linux-*
 .filesystem-setup-complete*
 .*-compiled-*

@@ -98,7 +98,7 @@ help:
 	@echo "that matches the host architecture (that is, if the Makefile is run"
 	@echo "on a 64-bit host, it will build a 64-bit kernel and a 64-bit filesystem"
 	@echo "image). The target architecture can be forced by using variable"
-	@echo "TARGET_ARCH, which has two possible values: 'i386' and 'amd64'."
+	@echo "TARGET_ARCH, which has two possible values: 'i386' and 'x86_64'."
 	@echo "Alternatively, any of the above targets can be invoked with suffix '32'"
 	@echo "or '64' to force a build for 32-bit or 64-bit architectures, respectively."
 	@echo "Using 'make kernel32' or 'make TARGET_ARCH=i386 kernel' is equivalent."
@@ -122,7 +122,7 @@ help:
 	@echo "order to tune the build process:"
 	@echo
 	@echo "   TARGET_ARCH (default: $(TARGET_ARCH))"
-	@echo "      Can be either 'i386' or 'x64_64'. Determines the architecture"
+	@echo "      Can be either 'i386' or 'x86_64'. Determines the architecture"
 	@echo "      for which kernel and filesystem are built."
 	@echo "   KERNEL_SOURCE_URL (default: $(KERNEL_SOURCE_URL))"
 	@echo "      URL of the kernel source package."

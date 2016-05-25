@@ -49,7 +49,7 @@ DEBIAN_MIRROR?=http://ftp.it.debian.org/debian
 # required files. Different .deb packages may be required depending on the
 # target architecture Netkit is being built for. Example:
 # HEADER_LIBRARY_DEBS_URL=$(DEBIAN_MIRROR)/debian/pool/main/v/vde2/libvdeplug-dev_2.3.2+r586-2_amd64.deb
-HEADER_LIBRARY_DEBS_URL:=$(DEBIAN_MIRROR)/pool/main/v/vde2/libvdeplug-dev_2.3.2+r586-2_$(TARGET_ARCH_DEBIAN).deb $(DEBIAN_MIRROR)/pool/main/libp/libpcap/libpcap0.8-dev_1.6.2-2_$(TARGET_ARCH_DEBIAN).deb
+HEADER_LIBRARY_DEBS_URL:=$(DEBIAN_MIRROR)/pool/main/v/vde2/libvdeplug-dev_2.3.2+r586-2+b1_$(TARGET_ARCH_DEBIAN).deb $(DEBIAN_MIRROR)/pool/main/libp/libpcap/libpcap0.8-dev_1.6.2-2_$(TARGET_ARCH_DEBIAN).deb
 
 # Variable: DEBIAN_RELEASE
 # Specifies the name of the Debian release that should be installed in the

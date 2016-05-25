@@ -138,5 +138,5 @@ ______________________________________________________________________________
 Ubuntu 14.04 (trusty) x86_64
 Additional packages required for filesystem64: fakeroot debootstrap debhelper
 autoconf libtool libssl-dev
-Additional packages required for filesystem32: debootstrap fakeroot dpkg-dev +adding user to the 'disk' group
+Additional packages required for filesystem32: debootstrap fakeroot dpkg-dev dh-autoreconf +adding user to the 'disk' group
 

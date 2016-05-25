@@ -160,7 +160,7 @@ diff -Naur linux-3.19.3-original/arch/um/Kconfig.net linux-3.19.3/arch/um/Kconfi
          make use of UML networking.
  
 +config UML_NET_DETERMINISTIC_MAC
-+	bool "Use a deterministic MAC addresses for network interfaces"
++	bool "Use deterministic MAC addresses for network interfaces"
 +	default y
 +	depends on UML_NET
 +	help

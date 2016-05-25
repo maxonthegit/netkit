@@ -27,7 +27,7 @@
 # Variable: KERNEL_SOURCE_URL
 # Specifies where to get the kernel source package from. Example:
 # KERNEL_SOURCE_URL?=https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.19.3.tar.xz
-KERNEL_SOURCE_URL?=https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.0.tar.xz
+KERNEL_SOURCE_URL?=https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.3.2.tar.xz
 
 # Variable: NETKIT_KERNEL_CONFIG_FILE
 # Specifies the name of the file containing the Netkit-specific kernel
@@ -141,8 +141,10 @@ $(KERNEL_PACKAGE_FILE):
 	$(call display_message,kernel,"Downloading kernel source package")
 # Here --no-use-server-timestamps is used in order to make sure that
 # the last changed date of the kernel package is the current time
-# (required for proper detection of prerequisite "freshness")
-	wget --progress=dot:mega --no-use-server-timestamps $(KERNEL_SOURCE_URL)
+# (required for proper detection of prerequisite "freshness").
+# --inet4-only is used for the (unfortunate) case when IPv6 connectivity
+# is available but not working.
+	wget --progress=dot:mega --no-use-server-timestamps --inet4-only $(KERNEL_SOURCE_URL)
 
 $(KERNEL_UNPACKED_DEBS_DIR)/usr:
 	$(call display_message,kernel,"Downloading and extracting support libraries required for kernel compilation")

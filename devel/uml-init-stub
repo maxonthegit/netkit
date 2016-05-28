@@ -22,7 +22,7 @@
 
 # Exit if any of the commands below fails (note that this will cause a
 # harmless panic in the UML kernel, because it implies killing init).
-set -e
+#set -e
 
 # Extra assignments on the UML kernel command line are
 # passed as environment variables to this script.
@@ -51,6 +51,8 @@ ip route add default dev eth0
 cd ${WORKDIR}
 
 make .fs-privileged-tasks-done-${TARGETARCH} TARGET_ARCH=${TARGETARCH}
+
+/bin/bash -l
 
 /sbin/poweroff -f
 

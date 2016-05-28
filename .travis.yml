@@ -1,0 +1,17 @@
+# Use a virtual machine (as opposed to a container)
+sudo: true
+
+# Install dependencies
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq gcc-multilib debootstrap fakeroot dpkg-dev bc
+  - sudo apt-get install -qq libguestfs-tools
+
+# Custom build script
+script:
+  - cd devel
+  - make kernel64
+  - make kernel32
+  - make filesystem64
+  - make filesystem32
+

@@ -82,6 +82,7 @@ endif
 MKFS=$(call find_command,mkfs.$(FILESYSTEM_TYPE))
 DEBOOTSTRAP=$(call find_command,debootstrap)
 FAKEROOT=$(call find_command,fakeroot)
+FAKECHROOT=$(call find_command,fakechroot)
 
 
 
@@ -128,18 +129,7 @@ include $(EXTERNAL_PACKAGES_MAKEFILES)
 #                Filesystem-related targets
 ###########################################################
 
-# Isolate the steps in the build procedure that require root privileges to be
-# executed
-ifeq ($(shell whoami),root)
-filesystem: $(FILESYSTEM_MOUNT_DIR)
-	$(call display_message,filesystem,"You can now continue the build as a standard user: just reinvoke the Makefile on the same filesystem target\(s\) specifying STAGE=2.")
-else
-ifeq ($(STAGE),2)
 filesystem: $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
-else
-filesystem: $(FILESYSTEM_MOUNT_DIR)
-endif
-endif
 
 $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .fs-setup-complete-$(TARGET_ARCH)
 	$(call display_message,filesystem,"Sparsifying filesystem image and moving it to its default location")
@@ -150,7 +140,7 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .fs-setup-complete-$(TA
 	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 	{ echo "=== SOFTWARE PIECES COMPILED FROM SOURCE CODE ==="; for i in $(EXTERNAL_PACKAGES); do echo $$i; done; } >> $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
-.fs-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+.fs-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR)
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
 # Must take care to invoke slirp from a sane path, because UML converts spaces in the slirp
 # path to underscores
@@ -169,7 +159,7 @@ $(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL) $(TOOLS_ARCH_
 # root=/ is required in order to let libmount understand correctly the 'device'
 # used to mount the root filesystem (otherwise, an error is raised every time
 # mount/umount are invoked).
-	$(BIN_UML_KERNEL) mem=512M rootfstype=hostfs eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet root=/ init=$(UML_INIT_STUB) TARGETARCH=$(TARGET_ARCH) WORKDIR=$(PWD)
+	$(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL) mem=512M rootfstype=hostfs eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet root=/ init=$(PWD)/$(UML_INIT_STUB) TARGETARCH=$(TARGET_ARCH) WORKDIR=$(PWD) con=fd:0,fd:1
 # At this point the filesystem mount directory may have an older
 # modification time than the filesystem image's.
 	touch $(FILESYSTEM_MOUNT_DIR)
@@ -180,7 +170,7 @@ $(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL) $(TOOLS_ARCH_
 # must have no prerequisites.
 .fs-privileged-tasks-done-$(TARGET_ARCH):
 	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
-	$(FAKEROOT) $(DEBOOTSTRAP) --no-resolve-deps --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
+	$(FAKECHROOT) $(FAKEROOT) $(DEBOOTSTRAP) --variant=fakechroot --no-resolve-deps --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
 	$(call display_message,filesystem,"Performing additional tasks inside the filesystem image")
 # Prepare a list of APT sources based on the official list of primary Debian mirrors
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
@@ -195,7 +185,7 @@ $(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL) $(TOOLS_ARCH_
 
 
 $(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL):
-	$(call display_message,filesystem,"Downloading binary UML image to be used for package installation")
+	$(call display_message,filesystem,"Downloading binary UML image to be used for installing base packages")
 	mkdir -p $(FILESYSTEM_BUILD_DIR)
 	wget --progress=dot:mega --inet4-only -O - $(BIN_UML_KERNEL_URL) | unxz -c >$(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL)
 	chmod +x $(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL)

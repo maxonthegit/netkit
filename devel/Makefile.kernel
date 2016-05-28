@@ -129,25 +129,26 @@ $(UNPACKED_KERNEL_DIR)/.patched: $(UNPACKED_KERNEL_DIR)/Makefile
 	for DIFF_FILE in $(KERNEL_PATCHES_DIR)/*.diff; do patch -p1 -d $(UNPACKED_KERNEL_DIR) < $$DIFF_FILE; done
 	touch $(UNPACKED_KERNEL_DIR)/.patched
 
-$(UNPACKED_KERNEL_DIR)/Makefile: $(KERNEL_PACKAGE_FILE)
+$(UNPACKED_KERNEL_DIR)/Makefile: $(KERNEL_BUILD_DIR)/$(KERNEL_PACKAGE_FILE)
 	$(call display_message,kernel,"Unpacking kernel source package")
-	mkdir -p $(KERNEL_BUILD_DIR)
 	tar -xJC $(KERNEL_BUILD_DIR) -f $<
 # Make sure the Makefile is newer than the kernel package (and do not
 # create a Makefile if there is none)
 	touch -c $(UNPACKED_KERNEL_DIR)/Makefile
 
-$(KERNEL_PACKAGE_FILE):
+$(KERNEL_BUILD_DIR)/$(KERNEL_PACKAGE_FILE):
 	$(call display_message,kernel,"Downloading kernel source package")
+	mkdir -p $(KERNEL_BUILD_DIR)
 # Here --no-use-server-timestamps is used in order to make sure that
 # the last changed date of the kernel package is the current time
 # (required for proper detection of prerequisite "freshness").
 # --inet4-only is used for the (unfortunate) case when IPv6 connectivity
 # is available but not working.
-	wget --progress=dot:mega --no-use-server-timestamps --inet4-only $(KERNEL_SOURCE_URL)
+	wget -P $(KERNEL_BUILD_DIR) --progress=dot:mega --no-use-server-timestamps --inet4-only $(KERNEL_SOURCE_URL)
 
 $(KERNEL_UNPACKED_DEBS_DIR)/usr:
 	$(call display_message,kernel,"Downloading and extracting support libraries required for kernel compilation")
+	mkdir -p $(KERNEL_BUILD_DIR)
 	mkdir -p $(KERNEL_UNPACKED_DEBS_DIR); rm -f $(KERNEL_BUILD_DIR)/*.deb
 	wget -P $(KERNEL_BUILD_DIR) --progress=dot:binary $(HEADER_LIBRARY_DEBS_URL)
 	for DEB_FILE in $(KERNEL_BUILD_DIR)/*.deb; do dpkg-deb -x $$DEB_FILE $(KERNEL_UNPACKED_DEBS_DIR); done
@@ -155,5 +156,5 @@ $(KERNEL_UNPACKED_DEBS_DIR)/usr:
 
 
 clean-kernel:
-	rm -fr $(KERNEL_BUILD_DIR) $(KERNEL_PACKAGE_FILE)
+	rm -fr $(KERNEL_BUILD_DIR)
 

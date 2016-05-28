@@ -74,11 +74,10 @@ help:
 	@echo
 	@echo "filesystem"
 	@echo "   Build a Debian filesystem image to be used with Netkit. Any"
-	@echo "   relevant pieces of software are automatically downloaded. Some build"
-	@echo "   steps require root privileges: a suitable message will ask you"
-	@echo "   to re-run the Makefile as root. After these steps are accomplished,"
-	@echo "   the build can continue with standard user privileges: another"
-	@echo "   message will ask you to re-run the Makefile for the final stage."
+	@echo "   relevant pieces of software are automatically downloaded. A"
+	@echo "   pre-compiled binary UML kernel will be downloaded during the"
+	@echo "   procedure in order to accomplish some tasks that would require"
+	@echo "   additional privileges on the host."
 	@echo "   Note: a properly working Netkit kernel must be available in order"
 	@echo "   to be able to build the filesystem image."
 	@echo "   The generated filesystem image will be put inside the fs/"
@@ -93,6 +92,9 @@ help:
 	@echo "   Clean any intermediate and final products of the respective build"
 	@echo "   processes. Using 'clean' as a target is a shortcut for 'clean-bintools"
 	@echo "   clean-kernel clean-filesystem'."
+	@echo
+	@echo "clean"
+	@echo "   Clean all of the above."
 	@echo 
 	@echo "By default, the Makefile performs a build for a target architecture"
 	@echo "that matches the host architecture (that is, if the Makefile is run"
@@ -106,17 +108,10 @@ help:
 	@echo "everything"
 	@echo "   Build any relevant command line tools, the kernel, and the"
 	@echo "   filesystem, both for a 32-bit architecture and for a 64-bit"
-	@echo "   architecture. This is a shortcut for the typical 'build everything'"
-	@echo "   pipeline:"
-	@echo "     make bintools32 bintools64 kernel32 kernel64 filesystem32 filesystem64 && \\"
-	@echo "     sudo make filesystem32 filesystem64 && \\"
-	@echo "     make filesystem32 filesystem64 STAGE=2"
-	@echo "   Users invoking this target should have adequate privileges"
-	@echo "   set up in the sudoers file."
+	@echo "   architecture."
 	@echo 
 	@echo "clean-everything"
-	@echo "   A synonym for 'clean-bintools32 clean-bintools64 clean-kernel32"
-	@echo "   clean-kernel64 clean-filesystem32 clean-filesystem64'."
+	@echo "   A synonym for 'clean32 clean64'."
 	@echo
 	@echo "The following variables can be specified on the make command line in"
 	@echo "order to tune the build process:"
@@ -174,8 +169,6 @@ all: bintools kernel filesystem
 all32: bintools32 kernel32 filesystem32
 all64: bintools64 kernel64 filesystem64
 everything: all32 all64
-	sudo $(MAKE) filesystem32 filesystem64
-	$(MAKE) STAGE=2 filesystem32 filesystem64
 
 bintools32:
 	$(MAKE) TARGET_ARCH=i386 bintools
@@ -245,8 +238,10 @@ include Makefile.slirp
 ##############################################################################
 
 clean: clean-bintools clean-kernel clean-filesystem
+clean32: clean-bintools32 clean-kernel32 clean-filesystem32
+clean64: clean-bintools64 clean-kernel64 clean-filesystem64
 
-clean-everything: clean-bintools32 clean-bintools64 clean-kernel32 clean-kernel64 clean-filesystem32 clean-filesystem64
+clean-everything: clean32 clean64
 
 clean-bintools:
 	rm -fr $(TOOLS_BUILD_DIR)

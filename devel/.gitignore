@@ -5,5 +5,8 @@ ovs-build-*
 pox-build*
 flowvisor-build*
 linux-*
-.filesystem-setup-complete*
+.fs-setup-complete*
+.fs-privileged-tasks-done-*
 .*-compiled-*
+uml-kernel
+

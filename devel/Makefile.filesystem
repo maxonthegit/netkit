@@ -68,7 +68,18 @@ FILESYSTEM_IMAGE_SIZE?=10G
 # The following assignment determines the filesystem type used inside the
 # Netkit filesystem image
 FILESYSTEM_TYPE:=ext4
-MKFS=$(call find_command,mkfs)
+
+# The following URL points to a compiled UML kernel that is used to write
+# inside the filesystem image without root privileges (and without the need
+# for host-side loopback device support). The UML kernel architecture must
+# match the host's.
+ifeq ($(shell arch),i386)
+BIN_UML_KERNEL_URL:=http://uml.devloop.org.uk/kernels/kernel32-4.3.5.xz
+else
+BIN_UML_KERNEL_URL:=http://uml.devloop.org.uk/kernels/kernel64-4.3.5.xz
+endif
+
+MKFS=$(call find_command,mkfs.$(FILESYSTEM_TYPE))
 DEBOOTSTRAP=$(call find_command,debootstrap)
 FAKEROOT=$(call find_command,fakeroot)
 
@@ -91,6 +102,12 @@ FILESYSTEM_TARGET_FILE_NAME:=netkit-fs-$(DEBIAN_RELEASE)-$(TARGET_ARCH)
 
 FILESYSTEM_MOUNT_DIR:=$(FILESYSTEM_BUILD_DIR)/temp-fs-mount
 # Sample value for FILESYSTEM_MOUNT_DIR: fs-build-x86_64/temp-fs-mount
+
+BIN_UML_KERNEL:=uml-kernel
+# Sample value for BIN_UML_KERNEL: uml-kernel
+
+UML_INIT_STUB:=uml-init-stub
+# Sample value for UML_INIT_STUB: uml-init-stub
 
 
 
@@ -124,7 +141,7 @@ filesystem: $(FILESYSTEM_MOUNT_DIR)
 endif
 endif
 
-$(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-complete-$(TARGET_ARCH)
+$(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .fs-setup-complete-$(TARGET_ARCH)
 	$(call display_message,filesystem,"Sparsifying filesystem image and moving it to its default location")
 	mkdir -p $(FILESYSTEM_TARGET_DIR)
 	cp --sparse=always -f $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)
@@ -133,33 +150,37 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .filesystem-setup-compl
 	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 	{ echo "=== SOFTWARE PIECES COMPILED FROM SOURCE CODE ==="; for i in $(EXTERNAL_PACKAGES); do echo $$i; done; } >> $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
-.filesystem-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
+.fs-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
 # Must take care to invoke slirp from a sane path, because UML converts spaces in the slirp
 # path to underscores
 # (see http://ptgmedia.pearsoncmg.com/images/9780131865051/downloads/013865056_Dike_book.pdf)
 	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet systemd.show_status=1
 	[ ! -f /tmp/.netkit-setup-running ]
-	touch .filesystem-setup-complete-$(TARGET_ARCH)
+	touch .fs-setup-complete-$(TARGET_ARCH)
 
 # The following target performs all the actions that require
-# the filesystem image to be mounted (using a loopback device).
-$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz $(EXTERNAL_PACKAGES_TARGETS)
-# This is the only phase that unavoidably requires root privileges (note:
-# working with fakeroot and fakechroot does not produce a working filesystem
-# image, at the very least because file ownerships are only simulated and not
-# really written to the filesystem).
-ifneq ($(shell whoami),root)
-	$(call display_message,filesystem,"Please re-invoke the Makefile as root on the same target\(s\): $(MAKECMDGOALS).")
-else    # ifneq ($(shell whoami),root)
+# the filesystem image to be mounted. In order to prevent this from
+# requiring root privileges and loopback device support on the host,
+# a compiled UML kernel is used for this task.
+$(FILESYSTEM_MOUNT_DIR): $(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL) $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz $(EXTERNAL_PACKAGES_TARGETS)
 	$(call display_message,filesystem,"Installing base packages in the filesystem image")
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)
-# The following command succeeds both if the filesystem is correctly mounted
-# (mount return success) and if the filesystem was already mounted (mount fails,
-# but mountpoint returns success), which may for example be the case if the
-# Makefile was previously interrupted.
+# root=/ is required in order to let libmount understand correctly the 'device'
+# used to mount the root filesystem (otherwise, an error is raised every time
+# mount/umount are invoked).
+	$(BIN_UML_KERNEL) mem=512M rootfstype=hostfs eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet root=/ init=$(UML_INIT_STUB) TARGETARCH=$(TARGET_ARCH) WORKDIR=$(PWD)
+# At this point the filesystem mount directory may have an older
+# modification time than the filesystem image's.
+	touch $(FILESYSTEM_MOUNT_DIR)
+
+
+# The following target is supposed to be invoked only from inside a UML kernel
+# image, since it involves operations that require root privileges. As such, it
+# must have no prerequisites.
+.fs-privileged-tasks-done-$(TARGET_ARCH):
 	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR) || mountpoint $(FILESYSTEM_MOUNT_DIR)
-	$(DEBOOTSTRAP) --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
+	$(FAKEROOT) $(DEBOOTSTRAP) --no-resolve-deps --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
 	$(call display_message,filesystem,"Performing additional tasks inside the filesystem image")
 # Prepare a list of APT sources based on the official list of primary Debian mirrors
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
@@ -170,14 +191,18 @@ else    # ifneq ($(shell whoami),root)
 	$(call display_message,filesystem,"Installing additional software pieces inside the filesystem image")
 	for ext_target in $(EXTERNAL_PACKAGES_INSTALL_TARGETS); do $(MAKE) $$ext_target; done
 	umount $(FILESYSTEM_MOUNT_DIR)
-# At this point the filesystem mount directory may have an older
-# modification time than the filesystem image's.
-	touch $(FILESYSTEM_MOUNT_DIR)
-endif
+	touch .fs-privileged-tasks-done-$(TARGET_ARCH)
 
+
+$(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL):
+	$(call display_message,filesystem,"Downloading binary UML image to be used for package installation")
+	mkdir -p $(FILESYSTEM_BUILD_DIR)
+	wget --progress=dot:mega --inet4-only -O - $(BIN_UML_KERNEL_URL) | unxz -c >$(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL)
+	chmod +x $(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL)
 
 $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz:
 	$(call display_message,filesystem,"Downloading packages for minimal Debian installation")
+	mkdir -p $(FILESYSTEM_BUILD_DIR)
 # Simply downloading .deb packages should not really require root privileges, so
 # we use fakeroot here
 	$(FAKEROOT) $(DEBOOTSTRAP) --download-only --arch=$(TARGET_ARCH_DEBIAN) --make-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
@@ -193,5 +218,5 @@ $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
 
 
 clean-filesystem: $(EXTERNAL_PACKAGES_CLEAN_TARGETS)
-	rm -fr $(FILESYSTEM_BUILD_DIR) .filesystem-setup-complete-$(TARGET_ARCH) $(EXTERNAL_PACKAGES_TARGETS)
+	rm -fr $(FILESYSTEM_BUILD_DIR) .fs-setup-complete-$(TARGET_ARCH) .fs-privileged-tasks-done-$(TARGET_ARCH) $(EXTERNAL_PACKAGES_TARGETS)
 

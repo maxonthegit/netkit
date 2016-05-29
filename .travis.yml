@@ -11,7 +11,7 @@ install:
 script:
   - cd devel
   - make kernel64
-  - make kernel32
   - make filesystem64
+  - make kernel32
   - make filesystem32
 

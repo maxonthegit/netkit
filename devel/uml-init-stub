@@ -52,7 +52,5 @@ cd ${WORKDIR}
 
 make do-privileged-tasks TARGET_ARCH=${TARGETARCH}
 
-/bin/bash -l
-
 /sbin/poweroff -f
 

@@ -1,7 +1,6 @@
 === General ===
 
 - Variables passed to the Makefiles do not make it through to the uml-init-stub
-- Broken installation of base packages
 
 - "pack" target in the Makefile
 - Document new targets (bintools, etc.)

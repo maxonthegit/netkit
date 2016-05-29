@@ -180,7 +180,7 @@ do-privileged-tasks:
 # the initial phase of the bootstrap take place: other phases (such as creation
 # of user groups, etc.) require true root privileges and will be carried out
 # later on in the UML instance that uses the filesystem image as main disk.
-	$(FAKECHROOT) /bin/bash -c "source $(DEBOOTSTRAP) --variant=fakechroot --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils --foreign $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)"
+	$(FAKECHROOT) $(FAKEROOT) /bin/bash -c "source $(DEBOOTSTRAP) --variant=fakechroot --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils --foreign $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)"
 	$(call display_message,filesystem,"Performing additional tasks inside the filesystem image")
 # Prepare a list of APT sources based on the official list of primary Debian mirrors
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt

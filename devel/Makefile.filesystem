@@ -193,6 +193,8 @@ do-privileged-tasks:
 # Prevent /dev from being a symbolic link to /dev
 	umount $(FILESYSTEM_MOUNT_DIR)/dev
 	-rm $(FILESYSTEM_MOUNT_DIR)/dev && mkdir $(FILESYSTEM_MOUNT_DIR)/dev
+# Required by systemd to boot properly
+	touch $(FILESYSTEM_MOUNT_DIR)/etc/machine-id
 	umount $(FILESYSTEM_MOUNT_DIR)
 	touch .fs-privileged-tasks-done-$(TARGET_ARCH)
 

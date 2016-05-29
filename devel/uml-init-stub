@@ -50,7 +50,7 @@ ip route add default dev eth0
 
 cd ${WORKDIR}
 
-make .fs-privileged-tasks-done-${TARGETARCH} TARGET_ARCH=${TARGETARCH}
+make do-privileged-tasks TARGET_ARCH=${TARGETARCH}
 
 /bin/bash -l
 

@@ -55,6 +55,8 @@ $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DI
 # the immediately subsequent OVS build.
 	dpkg-architecture --help
 	@echo dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f
+	dpkg-architecture -a$(TARGET_ARCH_DEBIAN) -tx86_64-linux-gnu -f
+	dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f
 	dpkg-architecture -L
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && \
 	   export $(shell dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f) && \

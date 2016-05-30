@@ -191,7 +191,7 @@ do-privileged-tasks:
 	$(call display_message,filesystem,"Installing additional software pieces inside the filesystem image")
 	for ext_target in $(EXTERNAL_PACKAGES_INSTALL_TARGETS); do $(MAKE) $$ext_target; done
 # Prevent /dev from being a symbolic link to /dev
-	umount $(FILESYSTEM_MOUNT_DIR)/dev
+	-umount $(FILESYSTEM_MOUNT_DIR)/dev
 	-rm $(FILESYSTEM_MOUNT_DIR)/dev && mkdir $(FILESYSTEM_MOUNT_DIR)/dev
 # Required by systemd to boot properly
 	touch $(FILESYSTEM_MOUNT_DIR)/etc/machine-id

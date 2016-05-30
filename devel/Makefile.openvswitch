@@ -53,6 +53,7 @@ $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DI
 # The following commands automatically invoke boot.sh if required
 # At the end, "make clean" is executed to avoid some problems with
 # the immediately subsequent OVS build.
+	@echo dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && \
 	   export $(shell dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f) && \
 	   DATAPATH_CONFIGURE_OPTS="$(OPENVSWITCH_CONFIGURE_OPTS)" DEB_CFLAGS_SET="$(COMPILE_FLAGS)" DEB_BUILD_OPTIONS='parallel=$(shell nproc) nocheck' fakeroot debian/rules binary && \

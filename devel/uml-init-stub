@@ -30,7 +30,7 @@
 # TARGETARCH: target architecture for the filesystem image (i386 or x86_64)
 # WORKDIR: the directory where the filesystem build is taking place
 
-mount -o remount,rw /
+mount -o remount,rw none /
 mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t tmpfs none /run

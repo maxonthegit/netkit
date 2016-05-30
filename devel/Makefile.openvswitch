@@ -53,13 +53,10 @@ $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DI
 # The following commands automatically invoke boot.sh if required
 # At the end, "make clean" is executed to avoid some problems with
 # the immediately subsequent OVS build.
-	dpkg-architecture --help
-	@echo dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f
-	dpkg-architecture -a$(TARGET_ARCH_DEBIAN) -tx86_64-linux-gnu -f
-	dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f
-	dpkg-architecture -L
+# Do not use spaces between options and option arguments in the following
+# invocation of dpkg-architecture: doing so would break Travis-CI.
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && \
-	   export $(shell dpkg-architecture -a $(TARGET_ARCH_DEBIAN) -t x86_64-linux-gnu -f) && \
+	   export $(shell dpkg-architecture -a$(TARGET_ARCH_DEBIAN) -tx86_64-linux-gnu -f) && \
 	   DATAPATH_CONFIGURE_OPTS="$(OPENVSWITCH_CONFIGURE_OPTS)" DEB_CFLAGS_SET="$(COMPILE_FLAGS)" DEB_BUILD_OPTIONS='parallel=$(shell nproc) nocheck' fakeroot debian/rules binary && \
 	   make clean
 	$(call display_message,openvswitch,"Building Open vSwitch")

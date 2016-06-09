@@ -69,15 +69,6 @@ FILESYSTEM_IMAGE_SIZE?=10G
 # Netkit filesystem image
 FILESYSTEM_TYPE:=ext4
 
-# The following URL points to a compiled UML kernel that is used to write
-# inside the filesystem image without root privileges (and without the need
-# for host-side loopback device support). The UML kernel architecture must
-# match the host's.
-ifeq ($(shell arch),i386)
-BIN_UML_KERNEL_URL:=http://uml.devloop.org.uk/kernels/kernel32-4.3.5.xz
-else
-BIN_UML_KERNEL_URL:=http://uml.devloop.org.uk/kernels/kernel64-4.3.5.xz
-endif
 
 MKFS=$(call find_command,mkfs.$(FILESYSTEM_TYPE))
 DEBOOTSTRAP=$(call find_command,debootstrap)
@@ -103,9 +94,6 @@ FILESYSTEM_TARGET_FILE_NAME:=netkit-fs-$(DEBIAN_RELEASE)-$(TARGET_ARCH)
 
 FILESYSTEM_MOUNT_DIR:=$(FILESYSTEM_BUILD_DIR)/temp-fs-mount
 # Sample value for FILESYSTEM_MOUNT_DIR: fs-build-x86_64/temp-fs-mount
-
-BIN_UML_KERNEL:=uml-kernel
-# Sample value for BIN_UML_KERNEL: uml-kernel
 
 UML_INIT_STUB:=uml-init-stub
 # Sample value for UML_INIT_STUB: uml-init-stub
@@ -140,7 +128,7 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .fs-setup-complete-$(TA
 	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 	{ echo "=== SOFTWARE PIECES COMPILED FROM SOURCE CODE ==="; for i in $(EXTERNAL_PACKAGES); do echo $$i; done; } >> $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
-.fs-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img .fs-privileged-tasks-done-$(TARGET_ARCH)
+.fs-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img .fs-privileged-tasks-done-$(TARGET_ARCH) kernel
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
 # Must take care to invoke slirp from a sane path, because UML converts spaces in the slirp
 # path to underscores
@@ -158,14 +146,14 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .fs-setup-complete-$(TA
 # The following target performs all the actions that require
 # the filesystem image to be mounted. In order to prevent this from
 # requiring root privileges and loopback device support on the host,
-# a compiled UML kernel is used for this task.
-.fs-privileged-tasks-done-$(TARGET_ARCH): $(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL) $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz .ext-packages-compiled-$(TARGET_ARCH)
+# a UML kernel is used for this task.
+.fs-privileged-tasks-done-$(TARGET_ARCH): kernel $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz .ext-packages-compiled-$(TARGET_ARCH)
 	$(call display_message,filesystem,"Installing base packages in the filesystem image")
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)
 # root=/ is required in order to let libmount understand correctly the 'device'
 # used to mount the root filesystem (otherwise, an error is raised every time
 # mount/umount are invoked).
-	$(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL) mem=512M rootfstype=hostfs eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet root=/ init=$(PWD)/$(UML_INIT_STUB) con0=fd:0,fd:1 TARGETARCH=$(TARGET_ARCH) WORKDIR=$(PWD)
+	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=512M rootfstype=hostfs eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet root=/ init=$(PWD)/$(UML_INIT_STUB) con0=fd:0,fd:1 TARGETARCH=$(TARGET_ARCH) WORKDIR=$(PWD)
 	[ -f .fs-privileged-tasks-done-$(TARGET_ARCH) ]
 
 
@@ -175,12 +163,15 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .fs-setup-complete-$(TA
 # must have no prerequisites.
 do-privileged-tasks:
 	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR)
+# Fix a potential problem with conflicting diversions (note that only basic
+# tools such as 'sed' are available inside the filesystem image at this stage)
+	-sed -i '/\/sbin\/ldconfig/d' /var/lib/dpkg/diversions
 # Make sure bash is used as interpreter for debootstrap, or strange things may
 # happen (invented package dependencies, etc.). Also, use --foreign to let only
 # the initial phase of the bootstrap take place: other phases (such as creation
 # of user groups, etc.) require true root privileges and will be carried out
 # later on in the UML instance that uses the filesystem image as main disk.
-	$(FAKECHROOT) $(FAKEROOT) /bin/bash -c "source $(DEBOOTSTRAP) --variant=fakechroot --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils --foreign $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)"
+	$(FAKECHROOT) $(FAKEROOT) /bin/bash -c "source $(DEBOOTSTRAP) --variant=fakechroot --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)"
 	$(call display_message,filesystem,"Performing additional tasks inside the filesystem image")
 # Prepare a list of APT sources based on the official list of primary Debian mirrors
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
@@ -195,16 +186,13 @@ do-privileged-tasks:
 	-rm $(FILESYSTEM_MOUNT_DIR)/dev && mkdir $(FILESYSTEM_MOUNT_DIR)/dev
 # Required by systemd to boot properly
 	touch $(FILESYSTEM_MOUNT_DIR)/etc/machine-id
+	umount $(FILESYSTEM_MOUNT_DIR)/sys
+	umount $(FILESYSTEM_MOUNT_DIR)/dev
+	umount $(FILESYSTEM_MOUNT_DIR)/proc
 	umount $(FILESYSTEM_MOUNT_DIR)
 	touch .fs-privileged-tasks-done-$(TARGET_ARCH)
 
 
-
-$(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL):
-	$(call display_message,filesystem,"Downloading binary UML image to be used for installing base packages")
-	mkdir -p $(FILESYSTEM_BUILD_DIR)
-	wget --progress=dot:mega --inet4-only -O - $(BIN_UML_KERNEL_URL) | unxz -c >$(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL)
-	chmod +x $(FILESYSTEM_BUILD_DIR)/$(BIN_UML_KERNEL)
 
 $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz:
 	$(call display_message,filesystem,"Downloading packages for minimal Debian installation")

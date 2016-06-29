@@ -7,6 +7,7 @@ flowvisor-build*
 linux-*
 .fs-setup-complete*
 .fs-privileged-tasks-done-*
+.second-stage-setup*
 .*-compiled-*
 uml-kernel
 

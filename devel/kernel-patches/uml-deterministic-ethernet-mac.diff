@@ -127,7 +127,7 @@ diff -Naur linux-3.19.3-original/arch/um/drivers/net_kern.c linux-3.19.3/arch/um
 +#ifdef CONFIG_UML_NET_DETERMINISTIC_MAC
 +	if (compute_hash(get_umid(), dev->name, hash)) {
 +		printk(KERN_WARNING
-+		       "Could not compute hash for determining the Ethernet address of"
++		       "Could not compute hash for determining the Ethernet address of "
 +		       "device %s. Using random address instead.\n", dev->name);
 +		eth_hw_addr_random(dev);
 +	}

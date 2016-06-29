@@ -128,12 +128,12 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .fs-setup-complete-$(TA
 	mv $(FILESYSTEM_PACKAGES_LIST_FROM_VM) $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 	{ echo "=== SOFTWARE PIECES COMPILED FROM SOURCE CODE ==="; for i in $(EXTERNAL_PACKAGES); do echo $$i; done; } >> $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME)-packages.lst
 
-.fs-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img .fs-privileged-tasks-done-$(TARGET_ARCH) kernel
+.fs-setup-complete-$(TARGET_ARCH): $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img .second-stage-setup-$(TARGET_ARCH) kernel
 	$(call display_message,filesystem,"Continuing filesystem setup inside virtual machine")
 # Must take care to invoke slirp from a sane path, because UML converts spaces in the slirp
 # path to underscores
 # (see http://ptgmedia.pearsoncmg.com/images/9780131865051/downloads/013865056_Dike_book.pdf)
-	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img con=null con0=fd:0,fd:1 eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet systemd.show_status=1
+	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img rw con=null con0=fd:0,fd:1 eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet systemd.show_status=1
 	[ ! -f /tmp/.netkit-setup-running ]
 	touch .fs-setup-complete-$(TARGET_ARCH)
 
@@ -143,17 +143,22 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .fs-setup-complete-$(TA
 
 
 
+.second-stage-setup-$(TARGET_ARCH): kernel .fs-privileged-tasks-done-$(TARGET_ARCH)
+	$(call display_message,filesystem,"Installing packages in the filesystem image \(second stage\)")
+	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=1G ubd0=$(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img rw quiet init=/etc/$(UML_INIT_STUB)-stage2 con=null con0=fd:0,fd:1
+	touch .second-stage-setup-$(TARGET_ARCH)
+
 # The following target performs all the actions that require
 # the filesystem image to be mounted. In order to prevent this from
 # requiring root privileges and loopback device support on the host,
-# a UML kernel is used for this task.
+# operations are carried out inside a UML kernel instance.
 .fs-privileged-tasks-done-$(TARGET_ARCH): kernel $(TOOLS_ARCH_DIR)/slirp $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz .ext-packages-compiled-$(TARGET_ARCH)
-	$(call display_message,filesystem,"Installing base packages in the filesystem image")
+	$(call display_message,filesystem,"Preparing base packages for being installed in the filesystem image")
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)
 # root=/ is required in order to let libmount understand correctly the 'device'
 # used to mount the root filesystem (otherwise, an error is raised every time
 # mount/umount are invoked).
-	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=512M rootfstype=hostfs eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet root=/ init=$(PWD)/$(UML_INIT_STUB) con0=fd:0,fd:1 TARGETARCH=$(TARGET_ARCH) WORKDIR=$(PWD)
+	$(NETKIT_HOME)/kernel/netkit-kernel-$(TARGET_ARCH) umid=netkit-setup-vm mem=512M rootfstype=hostfs eth0=slirp,,$(TOOLS_ARCH_DIR)/slirp quiet root=/ rw init=$(PWD)/$(UML_INIT_STUB) con=null con0=fd:0,fd:1 TARGETARCH=$(TARGET_ARCH) WORKDIR=$(PWD)
 	[ -f .fs-privileged-tasks-done-$(TARGET_ARCH) ]
 
 
@@ -161,17 +166,22 @@ $(FILESYSTEM_TARGET_DIR)/$(FILESYSTEM_TARGET_FILE_NAME): .fs-setup-complete-$(TA
 # The following target is supposed to be invoked only from inside a UML kernel
 # image, since it involves operations that require root privileges. As such, it
 # must have no prerequisites.
+# Also, it is invoked only after some basic setup operations have been
+# accomplished by the UML_INIT_STUB script.
 do-privileged-tasks:
 	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR)
-# Fix a potential problem with conflicting diversions (note that only basic
-# tools such as 'sed' are available inside the filesystem image at this stage)
-	-sed -i '/\/sbin\/ldconfig/d' /var/lib/dpkg/diversions
 # Make sure bash is used as interpreter for debootstrap, or strange things may
 # happen (invented package dependencies, etc.). Also, use --foreign to let only
 # the initial phase of the bootstrap take place: other phases (such as creation
 # of user groups, etc.) require true root privileges and will be carried out
 # later on in the UML instance that uses the filesystem image as main disk.
-	$(FAKECHROOT) $(FAKEROOT) /bin/bash -c "source $(DEBOOTSTRAP) --variant=fakechroot --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)"
+	$(FAKEROOT) /bin/bash -c "source $(DEBOOTSTRAP) --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils --foreign $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)" || { echo "First stage of debootstrap failed. Log follows"; cat $(FILESYSTEM_MOUNT_DIR)/debootstrap/debootstrap.log; false; }
+# Sometimes debootstrap --foreign ends up creating a copy of bash in
+# debootstrap/debootstrap when the fakechroot variant is used. Here we compensate
+# this problem.
+	cp $(DEBOOTSTRAP) $(FILESYSTEM_MOUNT_DIR)/debootstrap
+	cp $(UML_INIT_STUB) $(FILESYSTEM_MOUNT_DIR)/etc/$(UML_INIT_STUB)-stage2
+# Prepare a fake "init" for second-stage debootstrap
 	$(call display_message,filesystem,"Performing additional tasks inside the filesystem image")
 # Prepare a list of APT sources based on the official list of primary Debian mirrors
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
@@ -179,16 +189,14 @@ do-privileged-tasks:
 	cp -rd $(FILESYSTEM_TWEAKS_DIR)/* $(FILESYSTEM_MOUNT_DIR)
 	cp $(FILESYSTEM_PACKAGES_DEBCONF) $(FILESYSTEM_MOUNT_DIR)
 	ln -fs /etc/systemd/netkit/netkit-setup.service $(FILESYSTEM_MOUNT_DIR)/etc/systemd/system/multi-user.target.wants
+	mount
 	$(call display_message,filesystem,"Installing additional software pieces inside the filesystem image")
 	for ext_target in $(EXTERNAL_PACKAGES_INSTALL_TARGETS); do $(MAKE) $$ext_target; done
-# Prevent /dev from being a symbolic link to /dev
+# Prevent /dev from being a symbolic link to host's /dev
 	-umount $(FILESYSTEM_MOUNT_DIR)/dev
 	-rm $(FILESYSTEM_MOUNT_DIR)/dev && mkdir $(FILESYSTEM_MOUNT_DIR)/dev
 # Required by systemd to boot properly
 	touch $(FILESYSTEM_MOUNT_DIR)/etc/machine-id
-	umount $(FILESYSTEM_MOUNT_DIR)/sys
-	umount $(FILESYSTEM_MOUNT_DIR)/dev
-	umount $(FILESYSTEM_MOUNT_DIR)/proc
 	umount $(FILESYSTEM_MOUNT_DIR)
 	touch .fs-privileged-tasks-done-$(TARGET_ARCH)
 
@@ -212,5 +220,5 @@ $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
 
 
 clean-filesystem: $(EXTERNAL_PACKAGES_CLEAN_TARGETS)
-	rm -fr $(FILESYSTEM_BUILD_DIR) .fs-setup-complete-$(TARGET_ARCH) .fs-privileged-tasks-done-$(TARGET_ARCH) .ext-packages-compiled-$(TARGET_ARCH)
+	rm -fr $(FILESYSTEM_BUILD_DIR) .fs-setup-complete-$(TARGET_ARCH) .fs-privileged-tasks-done-$(TARGET_ARCH) .ext-packages-compiled-$(TARGET_ARCH) .debootstrap-second-stage-$(TARGET_ARCH)
 

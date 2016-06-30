@@ -43,14 +43,9 @@ OPENVSWITCH_CONFIGURE_OPTS=--disable-ssl
 endif
 
 
-$(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
-	$(call display_message,openvswitch,"Applying patches to Open vSwitch")
-	for DIFF_FILE in $(OPENVSWITCH_PATCHES); do patch -p1 -d $(OPENVSWITCH_BUILD_DIR)/ovs < $$DIFF_FILE; done
-	touch $(OPENVSWITCH_BUILD_DIR)/.patched
-
-.openvswitch-compiled-$(TARGET_ARCH): $(OPENVSWITCH_BUILD_DIR)/.patched $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
+.openvswitch-compiled-$(TARGET_ARCH): $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh
 	$(call display_message,openvswitch,"Building Debian packages")
-# The following commands automatically invoke boot.sh if required
+# The following commands automatically invoke boot.sh if required.
 # At the end, "make clean" is executed to avoid some problems with
 # the immediately subsequent OVS build.
 # Do not use spaces between options and option arguments in the following
@@ -59,8 +54,11 @@ $(OPENVSWITCH_BUILD_DIR)/.patched: $(OPENVSWITCH_PATCHES) $(OPENVSWITCH_BUILD_DI
 	   export $(shell dpkg-architecture -a$(TARGET_ARCH_DEBIAN) -tx86_64-linux-gnu -f) && \
 	   DATAPATH_CONFIGURE_OPTS="$(OPENVSWITCH_CONFIGURE_OPTS)" DEB_CFLAGS_SET="$(COMPILE_FLAGS)" DEB_BUILD_OPTIONS='parallel=$(shell nproc) nocheck' fakeroot debian/rules binary && \
 	   make clean
-	$(call display_message,openvswitch,"Building Open vSwitch")
+	$(call display_message,openvswitch,"Configuring Open vSwitch")
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && ./configure --prefix="$(FILESYSTEM_MOUNT_DIR)" --with-linux="$(UNPACKED_KERNEL_DIR)" $(OPENVSWITCH_CONFIGURE_OPTS)
+	$(call display_message,openvswitch,"Applying additional patches to Open vSwitch")
+	for DIFF_FILE in $(OPENVSWITCH_PATCHES); do patch -p1 -d $(OPENVSWITCH_BUILD_DIR)/ovs < $$DIFF_FILE; done
+	$(call display_message,openvswitch,"Building Open vSwitch")
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH)
 	touch .openvswitch-compiled-$(TARGET_ARCH)
 
@@ -70,6 +68,7 @@ openvswitch-install: .openvswitch-compiled-$(TARGET_ARCH)
 	$(call display_message,openvswitch,"Copying Debian packages inside the filesystem image for later installation")
 	cp $(wildcard $(OPENVSWITCH_BUILD_DIR)/*_$(TARGET_ARCH_DEBIAN).deb) $(wildcard $(OPENVSWITCH_BUILD_DIR)/*_all.deb) $(FILESYSTEM_MOUNT_DIR)/opt
 	$(call display_message,openvswitch,"Installing kernel modules")
+	echo $(DEPMOD)
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH="$(KERNEL_TARGET_MODULES_DIR)" modules_install
 
 $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh:
@@ -82,5 +81,5 @@ ifdef OPENVSWITCH_COMMIT_SHA
 endif
 
 clean-openvswitch:
-	rm -fr $(OPENVSWITCH_BUILD_DIR)
+	rm -fr $(OPENVSWITCH_BUILD_DIR) .openvswitch-compiled-$(TARGET_ARCH)
 

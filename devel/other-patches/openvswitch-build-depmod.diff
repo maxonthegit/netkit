@@ -1,0 +1,40 @@
+===============================================================================
+
+This is a patch for compiling Open vSwitch for use with Netkit.
+For more information: http://www.netkit.org/
+
+The standard Open vSwitch Makefile invokes depmod assuming that kernel modules
+are to be installed in /lib/modules. This patch corrects this behavior.
+
+===============================================================================
+
+     Copyright (C) 2016  Massimo Rimondini (rimondini@ing.uniroma3.it)
+     Computer Networks Research Group, Roma Tre University
+     Unidata S.p.A.
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, version 3 of the License.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+===============================================================================
+
+diff -Naur ovs/datapath/linux/Makefile.main ovs-patched/datapath/linux/Makefile.main
+--- ovs/datapath/linux/Makefile.main	2016-06-30 21:21:11.709075919 +0200
++++ ovs-patched/datapath/linux/Makefile.main	2016-06-29 23:22:32.922597430 +0200
+@@ -72,7 +72,7 @@
+ 
+ modules_install:
+ 	$(MAKE) -C $(KSRC) M=$(builddir) modules_install
+-	depmod `sed -n 's/#define UTS_RELEASE "\([^"]*\)"/\1/p' $(KSRC)/include/generated/utsrelease.h`
++	$(DEPMOD) `sed -n 's/#define UTS_RELEASE "\([^"]*\)"/\1/p' $(KSRC)/include/generated/utsrelease.h`
+ endif
+ 
+ # Much of the kernel build system in this file is derived from Intel's

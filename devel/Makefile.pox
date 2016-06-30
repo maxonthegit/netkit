@@ -52,4 +52,4 @@ ifdef POX_COMMIT_SHA
 endif
 
 clean-pox:
-	rm -fr $(POX_BUILD_DIR)
+	rm -fr $(POX_BUILD_DIR) .pox-compiled-$(TARGET_ARCH)

@@ -43,7 +43,7 @@ mount -t tmpfs none /run
 mountpoint /dev || mount -t devtmpfs none /dev
 
 case $(basename $0) in
-	uml-init-stub)
+	uml-init-stub|uml-init-stub-stage3)
 		# Replace resolv.conf in well-known (and writable) locations
 		for DIR in /run/{NetworkManager,resolvconf}; do
 			mkdir ${DIR}
@@ -57,12 +57,15 @@ case $(basename $0) in
 		ip route add default dev eth0
 
 		cd ${WORKDIR}
-
-		make do-privileged-tasks TARGET_ARCH=${TARGETARCH}
-	;;
+	;;&
+	uml-init-stub)
+		make do-privileged-tasks-stage1 TARGET_ARCH=${TARGETARCH}
+	;;&
 	uml-init-stub-stage2)
 		/bin/bash -c "source /debootstrap/debootstrap --second-stage" || { echo "Failed debootstrap stage 2. Log follows:"; cat /debootstrap/debootstrap.log; }
-	;;
+	;;&
+	uml-init-stub-stage3)
+		make do-privileged-tasks-stage3 TARGET_ARCH=${TARGETARCH}
 esac
 
 /sbin/poweroff -f

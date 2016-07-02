@@ -6,8 +6,8 @@ pox-build*
 flowvisor-build*
 linux-*
 .fs-setup-complete*
-.fs-privileged-tasks-done-*
+.fs-privileged-tasks-*
+.fs-stage*
 .second-stage-setup*
 .*-compiled-*
-uml-kernel
 

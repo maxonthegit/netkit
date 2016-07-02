@@ -24,6 +24,9 @@
 
 becho "Installing extra packages"
 
+#echo 'Acquire::http::Timeout "10";' > /etc/apt/apt.conf.d/90custom
+#echo 'Acquire::ftp::Timeout "10";' >> /etc/apt/apt.conf.d/90custom
+
 apt-get update
 
 # Pre-configure package options to avoid interactive requests
@@ -153,7 +156,7 @@ lsof
 mc
 minicom
 mktemp
-netexpect
+#netexpect
 openssl
 patch
 psmisc

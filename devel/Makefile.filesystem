@@ -233,5 +233,5 @@ $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img:
 
 
 clean-filesystem: $(EXTERNAL_PACKAGES_CLEAN_TARGETS)
-	rm -fr $(FILESYSTEM_BUILD_DIR) .fs-setup-complete-$(TARGET_ARCH) .fs-privileged-tasks-stage1-done-$(TARGET_ARCH) .fs-privileged-tasks-stage3-done-$(TARGET_ARCH) .fs-stage2-done-$(TARGET_ARCH) .ext-packages-compiled-$(TARGET_ARCH) .debootstrap-second-stage-$(TARGET_ARCH) .second-stage-setup-$(TARGET_ARCH) .third-stage-setup-$(TARGET_ARCH)
+	rm -fr $(FILESYSTEM_BUILD_DIR) .fs-setup-complete-$(TARGET_ARCH) .fs-privileged-tasks-stage1-done-$(TARGET_ARCH) .fs-privileged-tasks-stage3-done-$(TARGET_ARCH) .fs-stage2-done-$(TARGET_ARCH) .ext-packages-compiled-$(TARGET_ARCH)
 

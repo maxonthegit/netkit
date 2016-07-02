@@ -68,7 +68,6 @@ openvswitch-install: .openvswitch-compiled-$(TARGET_ARCH)
 	$(call display_message,openvswitch,"Copying Debian packages inside the filesystem image for later installation")
 	cp $(wildcard $(OPENVSWITCH_BUILD_DIR)/*_$(TARGET_ARCH_DEBIAN).deb) $(wildcard $(OPENVSWITCH_BUILD_DIR)/*_all.deb) $(FILESYSTEM_MOUNT_DIR)/opt
 	$(call display_message,openvswitch,"Installing kernel modules")
-	echo $(DEPMOD)
 	cd $(OPENVSWITCH_BUILD_DIR)/ovs && $(MAKE) -j $(shell nproc) CFLAGS="$(COMPILE_FLAGS)" ARCH=um SUBARCH=$(TARGET_ARCH) INSTALL_MOD_PATH="$(KERNEL_TARGET_MODULES_DIR)" modules_install
 
 $(OPENVSWITCH_BUILD_DIR)/ovs/boot.sh:

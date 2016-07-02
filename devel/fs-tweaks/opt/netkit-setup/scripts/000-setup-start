@@ -30,3 +30,11 @@ mount -t hostfs -o rw,/tmp none /temphost
 umount /temphost
 rmdir /temphost
 
+becho "Mounting /dev/pts if necessary"
+if ! mountpoint /dev/pts; then
+        mkdir -p /dev/pts
+	mount -t devpts devpts /dev/pts
+fi
+
+export PATH
+

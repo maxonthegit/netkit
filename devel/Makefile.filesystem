@@ -196,7 +196,7 @@ do-privileged-tasks-stage3:
 	mount -o loop $(FILESYSTEM_BUILD_DIR)/temp-fs-$(TARGET_ARCH).img $(FILESYSTEM_MOUNT_DIR)
 # Prepare a list of APT sources based on the official list of primary Debian mirrors
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/apt
-	wget --no-verbose -O - "http://ftp.it.debian.org/debian/README.mirrors.txt" | sed -n '/Primary/,/Secondary/p' | awk '/i386/ {split(substr($$0,match($$0,/ftp/)),a); print "# deb http://" a[1] a[2] " $(DEBIAN_RELEASE) main contrib non-free"}' | { sed '/ftp\.it/ s/^# //'; echo "deb http://mirrors.kernel.org/debian/ $(DEBIAN_RELEASE) main contrib non-free"; } > $(FILESYSTEM_MOUNT_DIR)/etc/apt/sources.list
+	wget --no-verbose -O - "http://ftp.it.debian.org/debian/README.mirrors.txt" | sed -n '/Primary/,/Secondary/p' | awk '/i386/ {split(substr($$0,match($$0,/ftp/)),a); print "# deb http://" a[1] a[2] " $(DEBIAN_RELEASE) main contrib non-free"}' | { echo "deb http://mirrors.kernel.org/debian/ $(DEBIAN_RELEASE) main contrib non-free"; sed '/ftp\.it/ s/^# //'; } > $(FILESYSTEM_MOUNT_DIR)/etc/apt/sources.list
 	cp -rd $(FILESYSTEM_TWEAKS_DIR)/* $(FILESYSTEM_MOUNT_DIR)
 	cp $(FILESYSTEM_PACKAGES_DEBCONF) $(FILESYSTEM_MOUNT_DIR)
 	mkdir -p $(FILESYSTEM_MOUNT_DIR)/etc/systemd/system/multi-user.target.wants

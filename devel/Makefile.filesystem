@@ -181,11 +181,7 @@ do-privileged-tasks-stage1:
 # the initial phase of the bootstrap take place: other phases (such as creation
 # of user groups, etc.) require true root privileges and will be carried out
 # later on in the UML instance that uses the filesystem image as main disk.
-	$(FAKEROOT) /bin/bash -c "source $(DEBOOTSTRAP) --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils --foreign $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)" || { echo "First stage of debootstrap failed. Log follows"; cat $(FILESYSTEM_MOUNT_DIR)/debootstrap/debootstrap.log; false; }
-# Sometimes debootstrap --foreign ends up creating a copy of bash in
-# debootstrap/debootstrap when the fakechroot variant is used. Here we compensate
-# this problem.
-	cp $(DEBOOTSTRAP) $(FILESYSTEM_MOUNT_DIR)/debootstrap
+	/bin/bash -c "$(FAKEROOT) $(DEBOOTSTRAP) --unpack-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz --arch=$(TARGET_ARCH_DEBIAN) --include=debconf-utils,xz-utils,gzip,bzip2,locales --foreign $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)" || { echo "First stage of debootstrap failed. Log follows"; cat $(FILESYSTEM_MOUNT_DIR)/debootstrap/debootstrap.log; false; }
 # Prepare a fake "init" for second-stage debootstrap
 	cp $(UML_INIT_STUB) $(FILESYSTEM_MOUNT_DIR)/etc/$(UML_INIT_STUB)-stage2
 	umount $(FILESYSTEM_MOUNT_DIR)
@@ -219,7 +215,7 @@ $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz:
 	mkdir -p $(FILESYSTEM_BUILD_DIR)
 # Simply downloading .deb packages should not really require root privileges, so
 # we use fakeroot here
-	$(FAKEROOT) $(DEBOOTSTRAP) --download-only --arch=$(TARGET_ARCH_DEBIAN) --make-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz --include=debconf-utils $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
+	$(FAKEROOT) $(DEBOOTSTRAP) --download-only --arch=$(TARGET_ARCH_DEBIAN) --make-tarball=$(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz --include=debconf-utils,xz-utils,gzip,bzip2,locales $(DEBIAN_RELEASE) $(FILESYSTEM_MOUNT_DIR) $(DEBIAN_MIRROR)
 	rm -fr $(FILESYSTEM_MOUNT_DIR)
 	ln -fs $(FILESYSTEM_BASEPACKAGES_ARCHIVE)-$(TIMESTAMP).tgz $(FILESYSTEM_BUILD_DIR)/$(FILESYSTEM_BASEPACKAGES_ARCHIVE).tgz
 

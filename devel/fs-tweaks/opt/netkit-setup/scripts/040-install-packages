@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #     This script is part of Netkit, a network emulation environment based on
 #     the integration of several existing pieces of software.
@@ -23,9 +23,6 @@
 . /opt/netkit-setup/utils.sh
 
 becho "Installing extra packages"
-
-#echo 'Acquire::http::Timeout "10";' > /etc/apt/apt.conf.d/90custom
-#echo 'Acquire::ftp::Timeout "10";' >> /etc/apt/apt.conf.d/90custom
 
 apt-get update
 

@@ -62,7 +62,10 @@ case $(basename $0) in
 		make do-privileged-tasks-stage1 TARGET_ARCH=${TARGETARCH}
 	;;&
 	uml-init-stub-stage2)
-		/bin/bash -c "source /debootstrap/debootstrap --second-stage" || { echo "Failed debootstrap stage 2. Log follows:"; cat /debootstrap/debootstrap.log; }
+		# Make (really) sure that bash is used as an interpreter
+		# for any debootstrap-related scripts
+		ln -fs bash /bin/sh
+		/debootstrap/debootstrap --second-stage || { echo "Failed debootstrap stage 2. Log follows:"; cat /debootstrap/debootstrap.log; }
 	;;&
 	uml-init-stub-stage3)
 		make do-privileged-tasks-stage3 TARGET_ARCH=${TARGETARCH}

@@ -144,7 +144,7 @@ help:
 ##############################################################################
 
 define display_message
-	@echo -e "\e[32;1m[$(1) $(TARGET_ARCH)]\e[0;1m $(2)\e[0m"
+	@echo -e "\e[32;1m### $$(date +"%d %b %Y %H:%M") [$(1) $(TARGET_ARCH)]\e[0;1m $(2)\e[0m"
 endef
 
 # Disable built-in rules
